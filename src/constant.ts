@@ -1,3 +1,0 @@
-export const UPDATE_CONTENT = 'UPDATE_CONTENT'
-export const UPDATE_SERVICE_WORK = 'UPDATE_SERVICE_WORK'
-export const RELOAD = 'RELOAD'
