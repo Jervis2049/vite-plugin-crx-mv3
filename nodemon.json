@@ -1,0 +1,4 @@
+{
+  "watch": ["./dist", "./examples/crx-react/vite.config.ts"],
+  "exec": "pnpm -C examples/crx-react dev"
+}

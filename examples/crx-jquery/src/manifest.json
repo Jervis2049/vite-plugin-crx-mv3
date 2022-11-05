@@ -1,0 +1,23 @@
+{
+  "name": "crx-jquery",
+  "description": "A Chrome extension demo.",
+  "version": "1.0.0",
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Hello World",
+    "default_popup": "index.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [{
+    "matches": [ "<all_urls>" ],
+    "js": ["content-scripts/content.js", "content-scripts/test.js"],
+    "run_at": "document_start"
+  }],
+  "manifest_version": 3
+}

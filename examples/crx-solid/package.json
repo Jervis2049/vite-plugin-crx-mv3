@@ -1,0 +1,17 @@
+{
+  "name": "crx-solid",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "solid-js": "^1.5.1"
+  },
+  "devDependencies": {
+    "vite-plugin-solid": "^2.3.0",
+    "vite": "^3.0.9",
+    "typescript": "^4.5.4",
+    "vite-plugin-crx-mv3": "workspace:*"
+  }
+}

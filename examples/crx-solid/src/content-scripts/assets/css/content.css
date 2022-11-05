@@ -1,0 +1,12 @@
+.button {
+  width: 200px;
+  height: 80px;
+  background: url(../click-here.png) no-repeat;
+  background-size: 100% 100%;
+  position: fixed;
+  top: 50%;
+  margin-top: -40px;
+  left: 0;
+  cursor: pointer;
+  z-index: 1000;
+}

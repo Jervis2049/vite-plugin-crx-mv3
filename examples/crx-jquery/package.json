@@ -1,0 +1,15 @@
+{
+  "name": "crx-jquery",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite-plugin-crx-mv3": "workspace:*"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "jquery": "^3.6.1"
+  }
+}
