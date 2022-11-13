@@ -1,5 +1,5 @@
 {
-  "name": "crx-vue-basic",
+  "name": "crx-vue",
   "version": "0.0.1",
   "scripts": {
     "test" : "vite",

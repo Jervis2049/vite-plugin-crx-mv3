@@ -1,10 +1,9 @@
 import type { ResolvedConfig } from 'vite'
 import type { ChromeExtensionManifest, ContentScript } from '../manifest'
-import { resolve, dirname, normalize, basename } from 'path'
+import { resolve, dirname, normalize } from 'path'
 import { promisify } from 'util'
 import fs from 'fs'
 import less from 'less'
-import { serviceWorkPlugin } from '../plugins/serviceWork'
 import {
   isJsonString,
   normalizeCssFilename,
@@ -31,7 +30,7 @@ export class ManifestProcessor {
   public contentScriptPaths: string[] = [] //content_scripts
   public assetPaths: string[] = [] // css & icons
   public srcDir: string
-  public manifestContent: Partial<ChromeExtensionManifest> = {}
+  public manifestContent: ChromeExtensionManifest = {}
 
   constructor(private options = {} as Options) {
     this.options = options
@@ -39,29 +38,6 @@ export class ManifestProcessor {
     this.plugins = options.viteConfig.plugins.filter(
       (p) => p.name !== VITE_PLUGIN_CRX_MV3
     )
-  }
-
-  public async generageServiceWorkScript(context): Promise<void> {
-    const input = this.options.viteConfig.build.rollupOptions.input
-    if (
-      !this.serviceWorkerPath ||
-      (this.serviceWorkerPath &&
-        JSON.stringify(input).includes(basename(this.serviceWorkerPath)))
-    )
-      return
-    const { rollup } = await import('rollup')
-    context.addWatchFile(this.serviceWorkerPath)
-    const build = await rollup({
-      input: this.serviceWorkerPath,
-      plugins: [
-        serviceWorkPlugin(this.serviceWorkerPath!, this.options.port!),
-        ...this.plugins
-      ]
-    })
-    await build.write({
-      dir: this.options.viteConfig.build.outDir,
-      entryFileNames: '[name].js'
-    })
   }
 
   public async generageContentScripts(context): Promise<void> {
@@ -86,8 +62,12 @@ export class ManifestProcessor {
         })
         const outputChunk = outputs[0]
         const viteMetadata = outputChunk?.viteMetadata
-        const importedCss = [...viteMetadata?.importedCss]
-        const importedAssets = [...viteMetadata?.importedAssets]
+        const importedCss = [
+          ...(viteMetadata?.importedCss ? viteMetadata.importedCss : [])
+        ]
+        const importedAssets = [
+          ...(viteMetadata?.importedAssets ? viteMetadata.importedAssets : [])
+        ]
         const cssSource = outputs.filter((x) =>
           importedCss.includes(x.fileName)
         )
@@ -102,7 +82,7 @@ export class ManifestProcessor {
           ]
         }
 
-        ;[outputChunk, ...cssSource, ...assetsSource].map((x) => {
+        [outputChunk, ...cssSource, ...assetsSource].map((x) => {
           let content = x.code
             ? convertIntoIIFE(relaceImgUrlPrefix(x.code))
             : relaceCssUrlPrefix(x.source)
@@ -116,7 +96,7 @@ export class ManifestProcessor {
     }
   }
 
-  public async transform(code, id) {
+  public async transform(code: string, id: string) {
     let data = ''
     if (this.serviceWorkerPath === id) {
       data = `var PORT=${this.options.port};`
@@ -141,12 +121,11 @@ export class ManifestProcessor {
     if (!isJsonString(manifestRaw)) {
       throw new Error('The manifest.json is not valid.')
     }
-    let manifestContent = JSON.parse(manifestRaw)
-    return manifestContent
+    this.manifestContent = JSON.parse(manifestRaw)
   }
 
   public async getAssetPaths() {
-    this.manifestContent = await this.readManifest()
+    await this.readManifest()
     this.contentScriptPaths = []
     this.assetPaths = []
     let service_worker = this.manifestContent?.background?.service_worker
@@ -172,12 +151,15 @@ export class ManifestProcessor {
         }
       })
     }
+    return [
+      service_worker,
+      this.manifestContent?.action?.default_popup,
+      this.manifestContent?.options_page
+    ].filter((x) => !!x)
   }
 
   //generate manifest.json
   public emitManifest(context) {
-    let { viteConfig } = this.options
-    let isProduction = viteConfig.mode === 'production'
     let manifestContent: ChromeExtensionManifest | Record<string, any> =
       this.manifestContent
     let serviceWorker = manifestContent?.background?.service_worker
@@ -234,6 +216,7 @@ export class ManifestProcessor {
           fileName: this.contentScriptDevPath
         })
         this.manifestContent.content_scripts = [
+          ...this.manifestContent.content_scripts,
           {
             matches: ['<all_urls>'],
             js: [this.contentScriptDevPath]

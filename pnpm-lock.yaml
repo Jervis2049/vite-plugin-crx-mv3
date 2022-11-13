@@ -109,6 +109,23 @@ importers:
       vite-plugin-crx-mv3: link:../..
       vue-tsc: 0.40.13_typescript@4.8.4
 
+  examples/crx-vue-without-popup:
+    specifiers:
+      '@vitejs/plugin-vue': ^2.3.0
+      typescript: ^4.5.4
+      vite: ^3.0.9
+      vite-plugin-crx-mv3: workspace:*
+      vue: ^3.2.25
+      vue-tsc: ^0.40.13
+    dependencies:
+      vue: 3.2.41
+    devDependencies:
+      '@vitejs/plugin-vue': 2.3.4_vite@3.1.8+vue@3.2.41
+      typescript: 4.8.4
+      vite: 3.1.8
+      vite-plugin-crx-mv3: link:../..
+      vue-tsc: 0.40.13_typescript@4.8.4
+
 packages:
 
   /@ampproject/remapping/2.2.0:

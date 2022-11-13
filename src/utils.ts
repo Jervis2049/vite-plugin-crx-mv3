@@ -26,7 +26,7 @@ export const normalizeJsFilename = (p: string) => p.replace(/\.[tj]sx?$/, '.js')
 export const normalizeCssFilename = (p: string) => p.replace(/\.less$/, '.css')
 
 export function relaceCssUrlPrefix(code: string) {
-  if (typeof code == 'string') {
+  if (typeof code === 'string') {
     return code.replace(/(?<=url\()[\s\S]*?(?=\))/gm, function (str) {
       return (
         'chrome-extension://' +
@@ -41,7 +41,7 @@ export function relaceImgUrlPrefix(code: string) {
   return code.replace(
     /(?<=(=))"[^(?!")]+(\.png|jpg|jpeg|svg|webp)"(?=,|;)/gm,
     function (str) {
-      return str.includes('http') ? str : `chrome.runtime.getURL(${str})`
+      return str.startsWith('http') ? str : `chrome.runtime.getURL(${str})`
     }
   )
 }

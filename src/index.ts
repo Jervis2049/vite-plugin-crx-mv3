@@ -17,6 +17,7 @@ interface Options {
 
 export default function crxMV3(options: Partial<Options> = {}): Plugin {
   let { port = 8181, manifest = '' } = options
+
   if (
     !manifest ||
     typeof manifest != 'string' ||
@@ -32,24 +33,27 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
   let manifestPath: string | undefined
   let changedFilePath: string
   let manifestProcessor
+  let srcDir = dirname(manifest)
 
-  function serviceWorkerInput(config) {
+  function setRollupInput(config, entries) {
     let rollupOptionsInput = config.build.rollupOptions.input
     if (Array.isArray(rollupOptionsInput)) {
-      config.build.rollupOptions.input = [
-        ...rollupOptionsInput,
-        ...(serviceWorkerPath ? [serviceWorkerPath] : [])
-      ]
+      config.build.rollupOptions.input = [...rollupOptionsInput, ...entries]
     } else if (typeof rollupOptionsInput === 'object') {
+      const entryObj = {}
+      entries.forEach((item) => {
+        const name = basename(item, extname(item))
+        entryObj[name] = resolve(srcDir, item)
+      })
       config.build.rollupOptions.input = {
         ...rollupOptionsInput,
-        ...(serviceWorkerPath
-          ? {
-              [basename(serviceWorkerPath, extname(serviceWorkerPath))]:
-                serviceWorkerPath
-            }
-          : {})
+        ...entryObj
       }
+    } else {
+      config.build.rollupOptions.input = [
+        ...(rollupOptionsInput ? [rollupOptionsInput] : []),
+        ...entries
+      ]
     }
   }
 
@@ -63,9 +67,8 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         assetInfo.facadeModuleId &&
         /.(j|t)s$/.test(assetInfo.facadeModuleId)
       ) {
-        let srcFullPath = resolve(dirname(manifest))
         const assetPath = dirname(assetInfo.facadeModuleId).replace(
-          normalizePath(srcFullPath),
+          normalizePath(resolve(srcDir)),
           ''
         )
         return `${assetPath ? assetPath.slice(1) + '/' : ''}[name].js`
@@ -118,8 +121,11 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         viteConfig: config
       })
       serviceWorkerPath = manifestProcessor.serviceWorkerPath
-      // Add background.js as part of rollupOptions.input
-      // serviceWorkerInput(config)
+
+      let entries = await manifestProcessor.getAssetPaths()
+      entries = entries.map((path) => resolve(srcDir, path))
+
+      setRollupInput(config, entries)
       // Rewrite output.entryFileNames to modify build path of assets.
       handleBuildPath(config)
       // Open socket service
@@ -131,7 +137,6 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     },
     async buildStart() {
       await manifestProcessor.getAssetPaths()
-      await manifestProcessor.generageServiceWorkScript(this)
       await manifestProcessor.generageContentScripts(this)
       await manifestProcessor.emitAssets(this)
       await manifestProcessor.emitScriptForDev(this)
@@ -148,11 +153,11 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         if (
           serviceWorkerPath === changedFilePath ||
           manifestChanged ||
-          changedFilePath.endsWith('background.js')
+          (changedFilePath && changedFilePath.endsWith('background.js'))
         ) {
           socket.send(UPDATE_SERVICE_WORK)
         } else if (
-          changedFilePath.includes('content-scripts') ||
+          (changedFilePath && changedFilePath.includes('content-scripts')) ||
           manifestChanged
         ) {
           socket.send(UPDATE_CONTENT)

@@ -46,9 +46,7 @@
     "vite": "^3.0.9"
   },
   "lint-staged": {
-    "*.{ts,js}": [
-
-    ]
+    "*.{ts,js}": "eslint --fix"
   },
   "files": [
     "dist",
