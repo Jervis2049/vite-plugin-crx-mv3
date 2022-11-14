@@ -29,7 +29,6 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
   }
 
   let socket: any
-  let serviceWorkerPath: string | undefined
   let manifestPath: string | undefined
   let changedFilePath: string
   let manifestProcessor
@@ -92,6 +91,9 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     const wss = new WebSocketServer({ noServer: true })
     wss.on('connection', function connection(ws) {
       console.log(`\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client connected.`)
+      ws.on('message',()=>{        
+        ws.send('keep websocket alive.')
+      })
       ws.on('close', () =>
         console.log(
           `\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client disconnected.`
@@ -120,8 +122,6 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         port,
         viteConfig: config
       })
-      serviceWorkerPath = manifestProcessor.serviceWorkerPath
-
       let entries = await manifestProcessor.getAssetPaths()
       entries = entries.map((path) => resolve(srcDir, path))
 
@@ -148,17 +148,12 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       manifestProcessor.emitManifest(this)
     },
     writeBundle() {
-      if (socket) {
+      if (socket) {        
         let manifestChanged = manifestPath === changedFilePath
-        if (
-          serviceWorkerPath === changedFilePath ||
-          manifestChanged ||
-          (changedFilePath && changedFilePath.endsWith('background.js'))
-        ) {
+        if (manifestProcessor.serviceWorkerPath === changedFilePath || manifestChanged) {
           socket.send(UPDATE_SERVICE_WORK)
         } else if (
-          (changedFilePath && changedFilePath.includes('content-scripts')) ||
-          manifestChanged
+          (changedFilePath && changedFilePath.includes('content-scripts')) || manifestChanged
         ) {
           socket.send(UPDATE_CONTENT)
         }
