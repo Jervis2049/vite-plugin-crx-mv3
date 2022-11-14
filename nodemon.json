@@ -1,4 +1,4 @@
 {
-  "watch": ["./dist", "./examples/crx-vue-without-popup/vite.config.ts"],
-  "exec": "pnpm -C examples/crx-vue-without-popup dev"
+  "watch": ["./dist", "./examples/crx-vue/vite.config.ts"],
+  "exec": "pnpm -C examples/crx-vue dev"
 }

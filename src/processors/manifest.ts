@@ -1,6 +1,6 @@
 import type { ResolvedConfig } from 'vite'
 import type { ChromeExtensionManifest, ContentScript } from '../manifest'
-import { resolve, dirname, normalize } from 'path'
+import { resolve, dirname, normalize, basename } from 'path'
 import { promisify } from 'util'
 import fs from 'fs'
 import less from 'less'
@@ -16,13 +16,11 @@ import {
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
 
 const readFile = promisify(fs.readFile)
-
 interface Options {
   manifestPath: string
   port: number
   viteConfig: ResolvedConfig
 }
-
 export class ManifestProcessor {
   public contentScriptDevPath = 'content-scripts/content-dev.js'
   public serviceWorkerDevPath = 'background-dev.js'
@@ -163,12 +161,19 @@ export class ManifestProcessor {
     let manifestContent: ChromeExtensionManifest | Record<string, any> =
       this.manifestContent
     let serviceWorker = manifestContent?.background?.service_worker
-    if (serviceWorker) {
-      manifestContent.background.service_worker = normalizeJsFilename(
-        manifestContent.background.service_worker
-      )
-    }
+    let defaultPopup = manifestContent?.action?.default_popup
+    let optionsPage = manifestContent.options_page
 
+    if (serviceWorker) {
+      manifestContent.background.service_worker =
+        normalizeJsFilename(serviceWorker)
+    }
+    if (defaultPopup) {
+      manifestContent.action.default_popup = basename(defaultPopup)
+    }
+    if (optionsPage) {
+      manifestContent.options_page = basename(optionsPage)
+    }
     if (Array.isArray(manifestContent.content_scripts)) {
       manifestContent.content_scripts.forEach((item: ContentScript) => {
         if (Array.isArray(item.js)) {

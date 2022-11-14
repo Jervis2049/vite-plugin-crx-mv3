@@ -9,7 +9,7 @@
   },
   "action": {
     "default_title": "Hello World",
-    "default_popup": "popup.html"
+    "default_popup": "../popup.html"
   },
   "background": {
     "service_worker": "background.ts"

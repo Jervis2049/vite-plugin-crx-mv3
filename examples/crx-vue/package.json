@@ -2,7 +2,6 @@
   "name": "crx-vue",
   "version": "0.0.1",
   "scripts": {
-    "test" : "vite",
     "dev": "vite build --watch --mode development",
     "build": "vite build"
   },

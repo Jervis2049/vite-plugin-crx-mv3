@@ -47,6 +47,12 @@ importers:
     devDependencies:
       vite-plugin-crx-mv3: link:../..
 
+  examples/crx-executescript-function:
+    specifiers:
+      vite-plugin-crx-mv3: workspace:*
+    devDependencies:
+      vite-plugin-crx-mv3: link:../..
+
   examples/crx-jquery:
     specifiers:
       jquery: ^3.6.1
