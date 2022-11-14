@@ -1,5 +1,5 @@
 {
-  "name": "crx-executescript-function",
+  "name": "crx-contentscript-less",
   "version": "0.0.1",
   "scripts": {
     "dev": "vite build --watch --mode development",

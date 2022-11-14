@@ -9,15 +9,14 @@
   },
   "action": {
     "default_title": "Hello World",
-    "default_popup": "index.html"
+    "default_popup": "../popup.html"
   },
   "background": {
     "service_worker": "background.js"
   },
   "content_scripts": [{
     "matches": [ "<all_urls>" ],
-    "js": ["content-scripts/content.js", "content-scripts/test.js"],
-    "run_at": "document_start"
+    "js": ["content-scripts/content.js", "content-scripts/test.js"]
   }],
   "manifest_version": 3
 }

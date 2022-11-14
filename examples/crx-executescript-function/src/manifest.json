@@ -1,0 +1,14 @@
+{
+  "name": "crx-executescript-function",
+  "description": "A Chrome extension demo.",
+  "version": "1.0.0",
+  "action": {},
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "manifest_version": 3
+}

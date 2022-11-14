@@ -41,7 +41,7 @@ importers:
       typescript: 4.8.4
       vite: 3.1.8_less@4.1.3
 
-  examples/crx-executeScript-function:
+  examples/crx-contentscript-less:
     specifiers:
       vite-plugin-crx-mv3: workspace:*
     devDependencies:
@@ -109,7 +109,7 @@ importers:
       vite-plugin-crx-mv3: link:../..
       vue-tsc: 0.40.13_typescript@4.8.4
 
-  examples/crx-vue-without-popup:
+  examples/crx-vue-sidebar:
     specifiers:
       '@vitejs/plugin-vue': ^2.3.0
       typescript: ^4.5.4
