@@ -5,13 +5,13 @@ import { normalizeCssFilename } from '../utils'
 export async function compileLess(context, originPath, fullPath) {
   const less = (await import('less')).default
   const source = readFileSync(fullPath, 'utf8')
-  const output = await less.render(source, {
+  const { css } = await less.render(source, {
     paths: [process.cwd()],
     compress: true
   })
   context.emitFile({
     type: 'asset',
-    source: output.css,
+    source: css,
     fileName: normalize(normalizeCssFilename(originPath))
   })
 }

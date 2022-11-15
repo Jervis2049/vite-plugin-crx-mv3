@@ -1,8 +1,7 @@
 import type { ResolvedConfig } from 'vite'
 import type { ChromeExtensionManifest, ContentScript } from '../manifest'
 import { resolve, dirname, normalize, basename } from 'path'
-import { promisify } from 'util'
-import fs from 'fs'
+import { readFileSync } from 'fs'
 import {
   isJsonString,
   normalizeCssFilename,
@@ -12,20 +11,20 @@ import {
   relaceImgUrlPrefix,
   convertIntoIIFE
 } from '../utils'
-import { VITE_PLUGIN_CRX_MV3 } from '../constants'
+import {
+  VITE_PLUGIN_CRX_MV3,
+  CONTENT_SCRIPT_DEV_PATH,
+  SERVICE_WORK_DEV_PATH
+} from '../constants'
 import { compileSass } from '../compiler/compile-sass'
 import { compileLess } from '../compiler/compile-less'
 
-
-const readFile = promisify(fs.readFile)
 interface Options {
   manifestPath: string
   port: number
   viteConfig: ResolvedConfig
 }
 export class ManifestProcessor {
-  public contentScriptDevPath = 'content-scripts/content-dev.js'
-  public serviceWorkerDevPath = 'background-dev.js'
   public serviceWorkerPath: string | undefined // service_worker
   public contentScriptPaths: string[] = [] //content_scripts
   public assetPaths: string[] = [] // css & icons
@@ -100,10 +99,7 @@ export class ManifestProcessor {
     let data = ''
     if (this.serviceWorkerPath === id) {
       data = `var PORT=${this.options.port};`
-      data += fs.readFileSync(
-        resolve(__dirname, 'client/background.js'),
-        'utf8'
-      )
+      data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
     }
     if (code.indexOf('chrome.scripting.executeScript') > 0) {
       code = code.replace(
@@ -116,8 +112,8 @@ export class ManifestProcessor {
     return data + code
   }
 
-  public async readManifest() {
-    let manifestRaw = await readFile(this.options.manifestPath, 'utf8')
+  public readManifest() {
+    let manifestRaw = readFileSync(this.options.manifestPath, 'utf8')
     if (!isJsonString(manifestRaw)) {
       throw new Error('The manifest.json is not valid.')
     }
@@ -203,47 +199,48 @@ export class ManifestProcessor {
           'utf8'
         )
         this.manifestContent.background = {
-          service_worker: this.serviceWorkerDevPath
+          service_worker: SERVICE_WORK_DEV_PATH
         }
         context.emitFile({
           type: 'asset',
           source: code + content,
-          fileName: this.serviceWorkerDevPath
+          fileName: SERVICE_WORK_DEV_PATH
         })
       }
 
-      if (this.manifestContent.content_scripts) {
-        let content = await readFile(
-          resolve(__dirname, 'client/content.js'),
-          'utf8'
-        )
-        context.emitFile({
-          type: 'asset',
-          source: code + content,
-          fileName: this.contentScriptDevPath
-        })
-        this.manifestContent.content_scripts = [
-          ...this.manifestContent.content_scripts,
-          {
-            matches: ['<all_urls>'],
-            js: [this.contentScriptDevPath]
-          }
-        ]
+      if (!this.manifestContent.content_scripts) {
+        this.manifestContent.content_scripts = []
       }
+      let content = readFileSync(
+        resolve(__dirname, 'client/content.js'),
+        'utf8'
+      )
+      context.emitFile({
+        type: 'asset',
+        source: code + content,
+        fileName: CONTENT_SCRIPT_DEV_PATH
+      })
+      this.manifestContent.content_scripts = [
+        ...this.manifestContent.content_scripts,
+        {
+          matches: ['<all_urls>'],
+          js: [CONTENT_SCRIPT_DEV_PATH]
+        }
+      ]
     }
   }
 
   // icon & css
-  public async emitAssets(context) {    
+  public async emitAssets(context) {
     for (const path of this.assetPaths) {
       const assetPath = resolve(this.srcDir, path)
       context.addWatchFile(assetPath)
       if (assetPath.endsWith('.less')) {
         await compileLess(context, path, assetPath)
-      }if (assetPath.endsWith('.scss')) {
+      } else if (assetPath.endsWith('.scss')) {
         await compileSass(context, path, assetPath)
       } else {
-        let content = await readFile(assetPath)
+        let content = readFileSync(assetPath)
         context.emitFile({
           type: 'asset',
           source: content,

@@ -4,11 +4,7 @@ import { resolve, dirname, extname, basename } from 'path'
 import { normalizePath, normalizePathResolve } from './utils'
 import { ManifestProcessor } from './processors/manifest'
 import { httpServerStart } from './http'
-import {
-  VITE_PLUGIN_CRX_MV3,
-  UPDATE_CONTENT,
-  UPDATE_SERVICE_WORK
-} from './constants'
+import { VITE_PLUGIN_CRX_MV3, UPDATE_CONTENT } from './constants'
 
 interface Options {
   port?: number
@@ -149,15 +145,9 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     },
     writeBundle() {
       if (socket) {
-        let manifestChanged = manifestPath === changedFilePath
         if (
-          manifestProcessor.serviceWorkerPath === changedFilePath ||
-          manifestChanged
-        ) {
-          socket.send(UPDATE_SERVICE_WORK)
-        } else if (
           (changedFilePath && changedFilePath.includes('content-scripts')) ||
-          manifestChanged
+          manifestProcessor.serviceWorkerPath === changedFilePath
         ) {
           socket.send(UPDATE_CONTENT)
         }
