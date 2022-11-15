@@ -1,9 +1,13 @@
 {
-  "name": "crx-contentscript-less",
+  "name": "crx-contentscript-sass-less",
   "version": "0.0.1",
   "scripts": {
     "dev": "vite build --watch --mode development",
     "build": "vite build"
+  },
+  "dependencies": {
+    "less": "^4.1.3",
+    "sass": "^1.56.1"
   },
   "devDependencies": {
     "vite-plugin-crx-mv3": "workspace:*"

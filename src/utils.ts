@@ -23,7 +23,7 @@ export function normalizePathResolve(p1, p2) {
 
 export const normalizeJsFilename = (p: string) => p.replace(/\.[tj]sx?$/, '.js')
 
-export const normalizeCssFilename = (p: string) => p.replace(/\.less$/, '.css')
+export const normalizeCssFilename = (p: string) => p.replace(/\.(less|scss)$/, '.css')
 
 export function relaceCssUrlPrefix(code: string) {
   if (typeof code === 'string') {

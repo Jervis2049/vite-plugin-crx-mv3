@@ -3,7 +3,6 @@ import type { ChromeExtensionManifest, ContentScript } from '../manifest'
 import { resolve, dirname, normalize, basename } from 'path'
 import { promisify } from 'util'
 import fs from 'fs'
-import less from 'less'
 import {
   isJsonString,
   normalizeCssFilename,
@@ -14,6 +13,9 @@ import {
   convertIntoIIFE
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
+import { compileSass } from '../compiler/compile-sass'
+import { compileLess } from '../compiler/compile-less'
+
 
 const readFile = promisify(fs.readFile)
 interface Options {
@@ -231,26 +233,15 @@ export class ManifestProcessor {
     }
   }
 
-  public async compileLess(context, originPath, fullPath) {
-    const source = await readFile(fullPath, 'utf8')
-    const output = await less.render(source, {
-      paths: [resolve(this.srcDir, dirname(originPath))],
-      compress: true
-    })
-    context.emitFile({
-      type: 'asset',
-      source: output.css,
-      fileName: normalize(normalizeCssFilename(originPath))
-    })
-  }
-
   // icon & css
-  public async emitAssets(context) {
+  public async emitAssets(context) {    
     for (const path of this.assetPaths) {
       const assetPath = resolve(this.srcDir, path)
       context.addWatchFile(assetPath)
       if (assetPath.endsWith('.less')) {
-        await this.compileLess(context, path, assetPath)
+        await compileLess(context, path, assetPath)
+      }if (assetPath.endsWith('.scss')) {
+        await compileSass(context, path, assetPath)
       } else {
         let content = await readFile(assetPath)
         context.emitFile({
