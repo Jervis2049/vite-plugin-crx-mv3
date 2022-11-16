@@ -112,6 +112,9 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     name: VITE_PLUGIN_CRX_MV3,
     enforce: 'pre',
     async configResolved(config: ResolvedConfig) {
+      // Open socket service
+      await websocketServerStart(config)
+      // manifest.json path
       manifestPath = normalizePathResolve(config.root, manifest)
       manifestProcessor = new ManifestProcessor({
         manifestPath,
@@ -120,12 +123,10 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       })
       let entries = await manifestProcessor.getAssetPaths()
       entries = entries.map((path) => resolve(srcDir, path))
-
+      // Set popup.html, options.html, service_worker srcipt as rollup entry
       setRollupInput(config, entries)
       // Rewrite output.entryFileNames to modify build path of assets.
       handleBuildPath(config)
-      // Open socket service
-      websocketServerStart(config)
     },
     watchChange(id) {
       changedFilePath = normalizePath(id)
