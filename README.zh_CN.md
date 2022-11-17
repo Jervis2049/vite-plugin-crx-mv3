@@ -53,7 +53,7 @@ pnpm build
 在本仓库下的examples目录下：
 
 + crx-contentscript-sass-less
-+ crx-executeScript-function
++ crx-executescript-function
 + crx-jquery
 + crx-react
 + crx-solid

@@ -53,7 +53,7 @@ pnpm build
 Check out the examples in this repo.
 
 + crx-contentscript-sass-less
-+ crx-executeScript-function
++ crx-executescript-function
 + crx-jquery
 + crx-react
 + crx-solid
