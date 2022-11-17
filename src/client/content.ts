@@ -13,7 +13,6 @@ ws.onopen = function () {
 ws.onmessage = function (e) {
   if (e.data === UPDATE_CONTENT && chrome.runtime?.id) {
     chrome.runtime.sendMessage({ msg: RELOAD }, () => {
-      ws.close()
       window.location.reload()
     })
   }

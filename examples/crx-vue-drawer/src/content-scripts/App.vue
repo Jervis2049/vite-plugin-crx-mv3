@@ -1,21 +1,20 @@
 <template>
-  <div class="crx-container" :class="{show: showModal}">
-    <img src="./Google-logo.png" alt="logo"  />
+  <div class="crx-container" :class="{ show: showModal }">
+    <img src="./Google-logo.png" alt="logo" />
   </div>
 </template>
 <script setup>
-import { ref }  from 'vue'
+import { ref } from 'vue'
 const showModal = ref(false)
 
 chrome.runtime.onMessage.addListener((msg) => {
-    if(msg === 'toggle'){
-      showModal.value = !showModal.value
-    }
-});
-
+  if (msg === 'toggle') {
+    showModal.value = !showModal.value
+  }
+})
 </script>
 <style scoped>
-.crx-container{
+.crx-container {
   width: 500px;
   height: 100%;
   right: 0;
@@ -31,10 +30,10 @@ chrome.runtime.onMessage.addListener((msg) => {
   align-items: center;
   justify-content: center;
 }
-.crx-container.show{
+.crx-container.show {
   transform: translateX(0);
 }
-.crx-container img{
+.crx-container img {
   width: 90%;
 }
 </style>

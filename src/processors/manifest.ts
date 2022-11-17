@@ -121,7 +121,7 @@ export class ManifestProcessor {
   }
 
   public async getAssetPaths() {
-    await this.readManifest()
+    this.readManifest()
     this.contentScriptPaths = []
     this.assetPaths = []
     let service_worker = this.manifestContent?.background?.service_worker
@@ -194,7 +194,7 @@ export class ManifestProcessor {
     if (viteConfig.mode !== 'production') {
       let code = `var PORT=${port};`
       if (!this.serviceWorkerPath) {
-        let content = await readFile(
+        let content =  readFileSync(
           resolve(__dirname, 'client/background.js'),
           'utf8'
         )

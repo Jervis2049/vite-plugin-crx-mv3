@@ -138,7 +138,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       await manifestProcessor.emitAssets(this)
       await manifestProcessor.emitScriptForDev(this)
     },
-    transform(code, id) {
+    transform(code, id) {      
       return manifestProcessor.transform(code, id)
     },
     async generateBundle() {
