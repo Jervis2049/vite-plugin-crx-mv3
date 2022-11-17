@@ -1,19 +1,19 @@
 
 # vite-plugin-crx-mv3
 
-Build a Chrome Extension with Vite.
+> Build a Chrome Extension with Vite.
 
 **English** | [简体中文](./README.zh_CN.md)
 
-### Features
+## Features
 
 + Chrome extension pages and injected scripts support the use of vue, react, etc.
 + content_scripts css configuration item supports .scss or .less files; js configuration item supports .js(x) or .ts(x) files.
 + background.service_worker configuration item supports .js or .ts files.
 + In development environments, content_scripts injected pages and Chrome extensions are automatically reloaded after content_scripts and background.service_worker are modified.
 
-### Usage
-#### Install
+## Usage
+### Install
 
 ```bash
 # pnpm
@@ -23,8 +23,23 @@ npm install vite-plugin-crx-mv3 -D
 # yarn
 yarn add vite-plugin-crx-mv3 -D
 ```
+### Plugin options
 
-#### Configuration
+#### port
+
+- **Type:** `number`
+- **Default:** `8181`
+
+Create a websocket connection. Notify Chrome extension clients to reload when changes are made to the contentscript and servicework files.
+
+#### manifest
+
+- **Type:** `string`
+- **Required :** `true`
+
+Path to the chrome extension's manifest.json
+
+### Configuration
 
 ```js
 import { defineConfig } from 'vite'
@@ -40,7 +55,8 @@ export default defineConfig({
   ],
 })
 ```
-#### Run
+
+### Run
 
 ```bash
 # development
@@ -49,7 +65,7 @@ pnpm dev
 pnpm build
 ```
 
-### Examples
+## Examples
 Check out the examples in this repo.
 
 + crx-contentscript-sass-less
@@ -62,3 +78,7 @@ Check out the examples in this repo.
 + crx-vue-mult-page
 
 Check out this [GIF](./docs/gif.md) preview.
+
+## Notices
++ After starting the project, you need to refresh the page manually for the first time, so that the client and the server can establish a websocket connection.
++ You need to restart the project after modifying manifest.json.

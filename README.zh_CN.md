@@ -1,20 +1,20 @@
 
 # vite-plugin-crx-mv3
 
-使用 Vite 构建 Chrome 扩展
+> 使用 Vite 构建 Chrome 扩展
 
 [English](./README.md) | **简体中文** 
 
-### 特性
+## 特性
 
 + Chrome扩展页面和注入脚本支持使用vue、react等等；
 + Content_scripts的css配置项支持.scss或.less文件；js配置项支持.js(x)或.ts(x)文件；
 + background.service_worker配置项支持.js或.ts文件；
 + 在开发环境，修改content_scripts和background.service_worker之后，content_scripts注入的页面和Chrome扩展程序会自动重载；
 
-### 用法
+## 用法
 
-#### 安装
+### 安装
 
 ```bash
 # pnpm
@@ -25,7 +25,23 @@ npm install vite-plugin-crx-mv3 -D
 yarn add vite-plugin-crx-mv3 -D
 ```
 
-#### 配置
+### 插件参数
+
+#### port
+
+- **Type:** `number`
+- **Default:** `8181`
+
+建立一个websocket连接。在contentscript和servicework文件发生变化时，通知Chrome扩展客户端重载。
+
+#### manifest
+
+- **Type:** `string`
+- **Required :** `true`
+
+Chrome扩展的manifest.json文件路径。
+
+### 配置
 ```js
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -41,7 +57,7 @@ export default defineConfig({
 })
 ```
 
-### 运行
+## 运行
 ```bash
 # development
 pnpm dev
@@ -49,7 +65,7 @@ pnpm dev
 pnpm build
 ```
 
-### 例子
+## 例子
 在本仓库下的examples目录下：
 
 + crx-contentscript-sass-less
@@ -62,3 +78,7 @@ pnpm build
 + crx-vue-mult-page
 
 查看这个[GIF](./docs/gif.md)预览效果。
+
+## 注意事项
++ 启动项目后，第一次需要手动刷新页面，这样客户端和服务端便建立了websocket连接。
++ 修改manifest.json后需要重新运行命令启动。
