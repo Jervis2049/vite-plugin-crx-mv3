@@ -30,7 +30,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
   let manifestProcessor
   let srcDir = dirname(manifest)
 
-  function setRollupInput(config, entries) {
+  function setRollupInput(config: ResolvedConfig, entries = []) {
     let rollupOptionsInput = config.build.rollupOptions.input
     if (Array.isArray(rollupOptionsInput)) {
       config.build.rollupOptions.input = [...rollupOptionsInput, ...entries]
@@ -52,7 +52,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     }
   }
 
-  function handleBuildPath(config) {
+  function handleBuildPath(config: ResolvedConfig) {
     if (!config.build.rollupOptions.output) {
       config.build.rollupOptions.output = {}
     }
@@ -79,7 +79,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     }
   }
 
-  async function websocketServerStart(config) {
+  async function websocketServerStart(config: ResolvedConfig) {
     if (config.mode === 'production') return
     const serverOptions = await httpServerStart(port)
     const server = serverOptions.server
@@ -97,8 +97,8 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       )
       socket = ws
     })
-    server.on('upgrade', function upgrade(request, socket, head) {
-      if (request.url === '/crx') {
+    server.on('upgrade', function upgrade(request, socket, head) {            
+      if (request.url === '/crx' && request.rawHeaders.includes(`localhost:${port}`)) {
         wss.handleUpgrade(request, socket, head, function done(ws) {
           wss.emit('connection', ws, request)
         })
@@ -138,7 +138,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       await manifestProcessor.emitAssets(this)
       await manifestProcessor.emitScriptForDev(this)
     },
-    transform(code, id) {      
+    transform(code, id) {
       return manifestProcessor.transform(code, id)
     },
     async generateBundle() {
