@@ -16,6 +16,9 @@
     "js": [ "content-scripts/content.ts"],
     "run_at": "document_start"
   }],
+  "background": {
+    "service_worker": "background.ts"
+  },
   "web_accessible_resources": [{
     "matches": ["<all_urls>"],
     "resources": ["assets/*"]

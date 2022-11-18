@@ -57,7 +57,7 @@ export default defineConfig({
 })
 ```
 
-## 运行
+### 运行
 ```bash
 # development
 pnpm dev
