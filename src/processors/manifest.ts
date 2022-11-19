@@ -1,35 +1,35 @@
-import type { ResolvedConfig } from 'vite'
+import { PluginContext } from 'rollup'
+import type { ResolvedConfig, Plugin } from 'vite'
 import type { ChromeExtensionManifest, ContentScript } from '../manifest'
 import { resolve, dirname, normalize, basename } from 'path'
 import { readFileSync } from 'fs'
+import { cloneDeep } from 'lodash-es'
 import {
   isJsonString,
   normalizeCssFilename,
   normalizePathResolve,
-  normalizeJsFilename,
-  relaceCssUrlPrefix,
-  relaceImgUrlPrefix,
-  convertIntoIIFE
+  normalizeJsFilename
 } from '../utils'
-import {
-  VITE_PLUGIN_CRX_MV3,
-  CONTENT_SCRIPT_DEV_PATH,
-  SERVICE_WORK_DEV_PATH
-} from '../constants'
+import { VITE_PLUGIN_CRX_MV3 } from '../constants'
 import { compileSass } from '../compiler/compile-sass'
 import { compileLess } from '../compiler/compile-less'
+import { generageContentScripts, generateScriptForDev } from './content_scripts'
 
 interface Options {
   manifestPath: string
   port: number
   viteConfig: ResolvedConfig
 }
+
 export class ManifestProcessor {
-  public serviceWorkerPath: string | undefined // service_worker
-  public contentScriptPaths: string[] = [] //content_scripts
+  public plugins: Plugin[]
+  public serviceWorkerPath: string | undefined
+  public defaultPopupPath: string | undefined
+  public optionsPagePath: string | undefined
   public assetPaths: string[] = [] // css & icons
   public srcDir: string
-  public manifestContent: ChromeExtensionManifest = {}
+  public manifestContent: Partial<ChromeExtensionManifest> = {}
+  public originalManifestContent: Partial<ChromeExtensionManifest> = {}
 
   constructor(private options = {} as Options) {
     this.options = options
@@ -37,67 +37,12 @@ export class ManifestProcessor {
     this.plugins = options.viteConfig.plugins.filter(
       (p) => p.name !== VITE_PLUGIN_CRX_MV3
     )
-  }
-
-  public async generageContentScripts(context): Promise<void> {
-    let { manifestPath } = this.options
-    const { rollup } = await import('rollup')
-    context.addWatchFile(manifestPath)
-    for (const script of this.manifestContent.content_scripts || []) {
-      for (const js of script.js || []) {
-        const build = await rollup({
-          input: resolve(this.srcDir, js),
-          plugins: this.plugins
-        })
-        let outputs = (
-          await build.generate({
-            entryFileNames: 'content-scripts/[name].js'
-            // format: "iife"
-          })
-        ).output
-
-        build.watchFiles.forEach((path) => {
-          context.addWatchFile(path)
-        })
-        const outputChunk = outputs[0]
-        const viteMetadata = outputChunk?.viteMetadata
-        const importedCss = [
-          ...(viteMetadata?.importedCss ? viteMetadata.importedCss : [])
-        ]
-        const importedAssets = [
-          ...(viteMetadata?.importedAssets ? viteMetadata.importedAssets : [])
-        ]
-        const cssSource = outputs.filter((x) =>
-          importedCss.includes(x.fileName)
-        )
-        const assetsSource = outputs.filter((item) =>
-          importedAssets.includes(item.fileName)
-        )
-
-        if (cssSource.length) {
-          script.css = [
-            ...(script.css ?? []),
-            ...cssSource.map((x) => x.fileName)
-          ]
-        }
-
-        [outputChunk, ...cssSource, ...assetsSource].map((x) => {
-          let content = x.code
-            ? convertIntoIIFE(relaceImgUrlPrefix(x.code))
-            : relaceCssUrlPrefix(x.source)
-          context.emitFile({
-            type: 'asset',
-            source: content,
-            fileName: x.fileName
-          })
-        })
-      }
-    }
+    this.readManifest()
   }
 
   public async transform(code: string, id: string) {
     let data = ''
-    if (this.serviceWorkerPath === id) {
+    if (normalizePathResolve(this.srcDir, this.serviceWorkerPath) === id) {
       data = `var PORT=${this.options.port};`
       data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
     }
@@ -112,65 +57,44 @@ export class ManifestProcessor {
     return data + code
   }
 
-  public readManifest() {
-    let manifestRaw = readFileSync(this.options.manifestPath, 'utf8')
+  public async readManifest() {
+    const manifestRaw = readFileSync(this.options.manifestPath, 'utf8')
     if (!isJsonString(manifestRaw)) {
       throw new Error('The manifest.json is not valid.')
     }
-    this.manifestContent = JSON.parse(manifestRaw)
-  }
-
-  public async getAssetPaths() {
-    this.readManifest()
-    this.contentScriptPaths = []
-    this.assetPaths = []
-    let service_worker = this.manifestContent?.background?.service_worker
-    if (service_worker) {
-      this.serviceWorkerPath = normalizePathResolve(this.srcDir, service_worker)
+    this.originalManifestContent = JSON.parse(manifestRaw)
+    if (!this.originalManifestContent.name) {
+      throw new Error('The name field of manifest.json is required.')
     }
-    if (this.manifestContent.icons) {
-      const icons = Object.keys(this.manifestContent.icons)
-      if (Array.isArray(icons)) {
-        let iconPaths = icons.map((key) => {
-          return this.manifestContent.icons?.[key]
-        })
-        this.assetPaths = [...this.assetPaths, ...iconPaths]
-      }
+    if (!this.originalManifestContent.version) {
+      throw new Error('The version field of manifest.json is required.')
     }
-    if (Array.isArray(this.manifestContent.content_scripts)) {
-      this.manifestContent.content_scripts.forEach((item: ContentScript) => {
-        if (Array.isArray(item.js)) {
-          this.contentScriptPaths = [...this.contentScriptPaths, ...item.js]
-        }
-        if (Array.isArray(item.css)) {
-          this.assetPaths = [...this.assetPaths, ...item.css]
-        }
-      })
+    if (!this.originalManifestContent.manifest_version) {
+      throw new Error(
+        'The manifest_version field of manifest.json is required.'
+      )
     }
-    return [
-      service_worker,
-      this.manifestContent?.action?.default_popup,
-      this.manifestContent?.options_page
-    ].filter((x) => !!x)
+    this.serviceWorkerPath =
+      this.originalManifestContent?.background?.service_worker
+    this.defaultPopupPath = this.originalManifestContent?.action?.default_popup
+    this.optionsPagePath = this.originalManifestContent.options_page
   }
 
   //generate manifest.json
-  public emitManifest(context) {
+  public generateManifest(context: PluginContext) {
     let manifestContent: ChromeExtensionManifest | Record<string, any> =
       this.manifestContent
-    let serviceWorker = manifestContent?.background?.service_worker
-    let defaultPopup = manifestContent?.action?.default_popup
-    let optionsPage = manifestContent.options_page
 
-    if (serviceWorker) {
-      manifestContent.background.service_worker =
-        normalizeJsFilename(serviceWorker)
+    if (this.serviceWorkerPath) {
+      manifestContent.background.service_worker = normalizeJsFilename(
+        this.serviceWorkerPath
+      )
     }
-    if (defaultPopup) {
-      manifestContent.action.default_popup = basename(defaultPopup)
+    if (this.defaultPopupPath) {
+      manifestContent.action.default_popup = basename(this.defaultPopupPath)
     }
-    if (optionsPage) {
-      manifestContent.options_page = basename(optionsPage)
+    if (this.optionsPagePath) {
+      manifestContent.options_page = basename(this.optionsPagePath)
     }
     if (Array.isArray(manifestContent.content_scripts)) {
       manifestContent.content_scripts.forEach((item: ContentScript) => {
@@ -188,50 +112,35 @@ export class ManifestProcessor {
       fileName: 'manifest.json'
     })
   }
-  // generate scripts for dev
-  public async emitScriptForDev(context) {
-    let { viteConfig, port } = this.options
-    if (viteConfig.mode !== 'production') {
-      let code = `var PORT=${port};`
-      if (!this.serviceWorkerPath) {
-        let content =  readFileSync(
-          resolve(__dirname, 'client/background.js'),
-          'utf8'
-        )
-        this.manifestContent.background = {
-          service_worker: SERVICE_WORK_DEV_PATH
-        }
-        context.emitFile({
-          type: 'asset',
-          source: code + content,
-          fileName: SERVICE_WORK_DEV_PATH
-        })
-      }
 
-      if (!this.manifestContent.content_scripts) {
-        this.manifestContent.content_scripts = []
+  public async generateBundle(context: PluginContext) {
+    this.manifestContent = await generageContentScripts(context, this)
+    this.manifestContent = await generateScriptForDev(context, this)
+  }
+
+  public async getAssetPaths() {
+    this.manifestContent = cloneDeep(this.originalManifestContent)
+    this.assetPaths = []
+    if (this.manifestContent.icons) {
+      const icons = Object.keys(this.manifestContent.icons)
+      if (Array.isArray(icons)) {
+        let iconPaths = icons.map((key) => {
+          return this.manifestContent.icons?.[key]
+        })
+        this.assetPaths = [...this.assetPaths, ...iconPaths]
       }
-      let content = readFileSync(
-        resolve(__dirname, 'client/content.js'),
-        'utf8'
-      )
-      context.emitFile({
-        type: 'asset',
-        source: code + content,
-        fileName: CONTENT_SCRIPT_DEV_PATH
-      })
-      this.manifestContent.content_scripts = [
-        ...this.manifestContent.content_scripts,
-        {
-          matches: ['<all_urls>'],
-          js: [CONTENT_SCRIPT_DEV_PATH]
+    }
+    if (Array.isArray(this.manifestContent.content_scripts)) {
+      this.manifestContent.content_scripts.forEach((item: ContentScript) => {
+        if (Array.isArray(item.css)) {
+          this.assetPaths = [...this.assetPaths, ...item.css]
         }
-      ]
+      })
     }
   }
 
   // icon & css
-  public async emitAssets(context) {
+  public async emitAssets(context: PluginContext) {
     for (const path of this.assetPaths) {
       const assetPath = resolve(this.srcDir, path)
       context.addWatchFile(assetPath)

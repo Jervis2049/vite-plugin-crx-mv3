@@ -3,7 +3,7 @@ import path from 'path'
 
 export function isJsonString(str: string) {
   try {
-    return typeof JSON.parse(str) == 'object'
+    return typeof JSON.parse(str) === 'object'
   } catch (e) {
     return false
   }
@@ -23,7 +23,8 @@ export function normalizePathResolve(p1, p2) {
 
 export const normalizeJsFilename = (p: string) => p.replace(/\.[tj]sx?$/, '.js')
 
-export const normalizeCssFilename = (p: string) => p.replace(/\.(less|scss)$/, '.css')
+export const normalizeCssFilename = (p: string) =>
+  p.replace(/\.(less|scss)$/, '.css')
 
 export function relaceCssUrlPrefix(code: string) {
   if (typeof code === 'string') {
@@ -37,9 +38,9 @@ export function relaceCssUrlPrefix(code: string) {
   return code
 }
 
-export function relaceImgUrlPrefix(code: string) {
+export function relaceResourcePathPrefix(code: string) {
   return code.replace(
-    /(?<=(=))"[^(?!")]+(\.png|jpg|jpeg|svg|webp)"(?=,|;)/gm,
+    /(?<=(=))"[^(?!")]+(\.png|jpg|jpeg|svg|webp|gif|mp3|mp4|avi|rmvb|mpeg|ra|ram|mov|wmv)"(?=,|;)/gm,
     function (str) {
       return str.startsWith('http') ? str : `chrome.runtime.getURL(${str})`
     }

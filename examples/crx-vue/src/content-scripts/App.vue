@@ -4,6 +4,7 @@
   </div>
 </template>
 <script setup>
+
 function handleClick() {
   alert('This is a fun Chrome extension.')
 }

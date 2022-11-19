@@ -30,23 +30,23 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
   let manifestProcessor
   let srcDir = dirname(manifest)
 
-  function setRollupInput(config: ResolvedConfig, entries = []) {
-    let rollupOptionsInput = config.build.rollupOptions.input
-    if (Array.isArray(rollupOptionsInput)) {
-      config.build.rollupOptions.input = [...rollupOptionsInput, ...entries]
-    } else if (typeof rollupOptionsInput === 'object') {
+  function setRollupInput(config: ResolvedConfig, entries: string[]) {
+    let buildInput = config.build.rollupOptions?.input
+    if (Array.isArray(buildInput)) {
+      config.build.rollupOptions.input = [...buildInput, ...entries]
+    } else if (typeof buildInput === 'object') {
       const entryObj = {}
       entries.forEach((item) => {
         const name = basename(item, extname(item))
         entryObj[name] = resolve(srcDir, item)
       })
       config.build.rollupOptions.input = {
-        ...rollupOptionsInput,
+        ...buildInput,
         ...entryObj
       }
     } else {
       config.build.rollupOptions.input = [
-        ...(rollupOptionsInput ? [rollupOptionsInput] : []),
+        ...(buildInput ? [buildInput] : []),
         ...entries
       ]
     }
@@ -97,8 +97,11 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       )
       socket = ws
     })
-    server.on('upgrade', function upgrade(request, socket, head) {            
-      if (request.url === '/crx' && request.rawHeaders.includes(`localhost:${port}`)) {
+    server.on('upgrade', function upgrade(request, socket, head) {
+      if (
+        request.url === '/crx' &&
+        request.rawHeaders.includes(`localhost:${port}`)
+      ) {
         wss.handleUpgrade(request, socket, head, function done(ws) {
           wss.emit('connection', ws, request)
         })
@@ -121,8 +124,14 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         port,
         viteConfig: config
       })
-      let entries = await manifestProcessor.getAssetPaths()
-      entries = entries.map((path) => resolve(srcDir, path))
+      const entries = [
+        manifestProcessor.serviceWorkerPath,
+        manifestProcessor.defaultPopupPath,
+        manifestProcessor.optionsPagePath
+      ]
+        .filter((x) => !!x)
+        .map((path) => resolve(srcDir, path))
+
       // Set popup.html, options.html, service_worker srcipt as rollup entry
       setRollupInput(config, entries)
       // Rewrite output.entryFileNames to modify build path of assets.
@@ -134,21 +143,20 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     },
     async buildStart() {
       await manifestProcessor.getAssetPaths()
-      await manifestProcessor.generageContentScripts(this)
+      await manifestProcessor.generateBundle(this)
       await manifestProcessor.emitAssets(this)
-      await manifestProcessor.emitScriptForDev(this)
     },
     transform(code, id) {
       return manifestProcessor.transform(code, id)
     },
-    async generateBundle() {
-      manifestProcessor.emitManifest(this)
+    generateBundle() {
+      manifestProcessor.generateManifest(this)
     },
     writeBundle() {
       if (socket) {
         if (
-          (changedFilePath && changedFilePath.includes('content-scripts')) ||
-          manifestProcessor.serviceWorkerPath === changedFilePath
+          changedFilePath.includes('content-scripts') ||
+          changedFilePath === manifestProcessor.serviceWorkerPath
         ) {
           socket.send(UPDATE_CONTENT)
         }
