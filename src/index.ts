@@ -125,12 +125,12 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         viteConfig: config
       })
       const entries = [
-        manifestProcessor.serviceWorkerPath,
         manifestProcessor.defaultPopupPath,
         manifestProcessor.optionsPagePath
       ]
         .filter((x) => !!x)
         .map((path) => resolve(srcDir, path))
+        .concat(manifestProcessor.serviceWorkerFullPath)
 
       // Set popup.html, options.html, service_worker srcipt as rollup entry
       setRollupInput(config, entries)
@@ -156,7 +156,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       if (socket) {
         if (
           changedFilePath.includes('content-scripts') ||
-          changedFilePath === manifestProcessor.serviceWorkerPath
+          changedFilePath === manifestProcessor.serviceWorkerFullPath
         ) {
           socket.send(UPDATE_CONTENT)
         }

@@ -3,7 +3,6 @@ import type { ResolvedConfig, Plugin } from 'vite'
 import type { ChromeExtensionManifest, ContentScript } from '../manifest'
 import { resolve, dirname, normalize, basename } from 'path'
 import { readFileSync } from 'fs'
-import { cloneDeep } from 'lodash-es'
 import {
   isJsonString,
   normalizeCssFilename,
@@ -24,6 +23,7 @@ interface Options {
 export class ManifestProcessor {
   public plugins: Plugin[]
   public serviceWorkerPath: string | undefined
+  public serviceWorkerFullPath: string | undefined
   public defaultPopupPath: string | undefined
   public optionsPagePath: string | undefined
   public assetPaths: string[] = [] // css & icons
@@ -38,23 +38,6 @@ export class ManifestProcessor {
       (p) => p.name !== VITE_PLUGIN_CRX_MV3
     )
     this.readManifest()
-  }
-
-  public async transform(code: string, id: string) {
-    let data = ''
-    if (normalizePathResolve(this.srcDir, this.serviceWorkerPath) === id) {
-      data = `var PORT=${this.options.port};`
-      data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
-    }
-    if (code.indexOf('chrome.scripting.executeScript') > 0) {
-      code = code.replace(
-        /(?<=chrome.scripting.executeScript\()[\s\S]*?(?=\))/gm,
-        function (fileStr) {
-          return normalizeJsFilename(fileStr)
-        }
-      )
-    }
-    return data + code
   }
 
   public async readManifest() {
@@ -76,6 +59,10 @@ export class ManifestProcessor {
     }
     this.serviceWorkerPath =
       this.originalManifestContent?.background?.service_worker
+    this.serviceWorkerFullPath = normalizePathResolve(
+      this.srcDir,
+      this.serviceWorkerPath
+    )
     this.defaultPopupPath = this.originalManifestContent?.action?.default_popup
     this.optionsPagePath = this.originalManifestContent.options_page
   }
@@ -113,13 +100,32 @@ export class ManifestProcessor {
     })
   }
 
+  public async transform(code: string, id: string) {
+    let data = ''
+    if (this.serviceWorkerFullPath === id) {
+      data = `var PORT=${this.options.port};`
+      data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
+    }
+    if (code.indexOf('chrome.scripting.executeScript') > 0) {
+      code = code.replace(
+        /(?<=chrome.scripting.executeScript\()[\s\S]*?(?=\))/gm,
+        function (fileStr) {
+          return normalizeJsFilename(fileStr)
+        }
+      )
+    }
+    return data + code
+  }
+
   public async generateBundle(context: PluginContext) {
     this.manifestContent = await generageContentScripts(context, this)
     this.manifestContent = await generateScriptForDev(context, this)
   }
 
   public async getAssetPaths() {
-    this.manifestContent = cloneDeep(this.originalManifestContent)
+    this.manifestContent = JSON.parse(
+      JSON.stringify(this.originalManifestContent)
+    )
     this.assetPaths = []
     if (this.manifestContent.icons) {
       const icons = Object.keys(this.manifestContent.icons)

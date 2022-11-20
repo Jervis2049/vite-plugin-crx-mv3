@@ -3,7 +3,7 @@
 function App() {
   return (
     <div className="crx-container">
-        hello world!!!
+        hello world!
     </div>
   )
 }

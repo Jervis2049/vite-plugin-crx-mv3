@@ -24,6 +24,7 @@ importers:
       vite: ^3.0.9
       ws: ^8.9.0
     dependencies:
+      lodash-es: 4.17.21
       rollup: 3.2.3
       ws: 8.9.0
     devDependencies:
@@ -37,7 +38,6 @@ importers:
       husky: 8.0.1
       less: 4.1.3
       lint-staged: 13.0.3
-      lodash-es: 4.17.21
       nodemon: 2.0.20
       prettier: 2.7.1
       sass: 1.56.1
@@ -2217,7 +2217,7 @@ packages:
 
   /lodash-es/4.17.21:
     resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
-    dev: true
+    dev: false
 
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
