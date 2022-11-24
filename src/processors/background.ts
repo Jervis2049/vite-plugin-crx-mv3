@@ -1,0 +1,52 @@
+import { PluginContext } from 'rollup'
+import { createRequire } from 'module'
+import { normalizeJsFilename, normalizeCssFilename } from '../utils'
+import { emitAsset } from './asset'
+import { resolve } from 'path'
+
+const require = createRequire(import.meta.url)
+
+const dynamicImportAssetRex =
+  /(?<=chrome.scripting.insertCSS\()[\s\S]*?(?=\))/gm
+const dynamicImportScriptRex =
+  /(?<=chrome.scripting.executeScript\()[\s\S]*?(?=\))/gm
+
+export async function generageDynamicImportScript(
+  context: PluginContext,
+  manifestContext,
+  code: string
+): Promise<string> {
+  return code.replace(dynamicImportScriptRex, (match) =>
+    match.replace(/(?<=(files:\[)?)["|'][\s\S]*?["|'](?=\]?)/gm, (fileStr) => {
+      const outDir = manifestContext.options.viteConfig.build?.outDir || 'dist'
+      const filePath = fileStr.replace(/"|'/g, '').trim()
+      const fileFullPath = resolve(manifestContext.srcDir, filePath)
+      const normalizePath = normalizeJsFilename(filePath)
+      context.addWatchFile(fileFullPath)
+      const { rollup } = require('rollup')
+      rollup({
+        input: fileFullPath,
+        plugins: manifestContext.plugins
+      }).then(async (bundle) => {
+        await bundle.write({
+          file: `${outDir}/${normalizePath}`
+        })
+      })
+      return normalizePath
+    })
+  )
+}
+
+export async function generageDynamicImportAsset(
+  context: PluginContext,
+  srcDir: string,
+  code: string
+): Promise<string> {
+  return code.replace(dynamicImportAssetRex, (match) =>
+    match.replace(/(?<=(files:\[)?)["|'][\s\S]*?["|'](?=\]?)/gm, (fileStr) => {
+      const filePath = fileStr.replace(/"|'/g, '').trim()
+      emitAsset(context, srcDir, filePath)
+      return normalizeCssFilename(filePath)
+    })
+  )
+}

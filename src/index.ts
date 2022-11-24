@@ -144,10 +144,10 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     async buildStart() {
       await manifestProcessor.getAssetPaths()
       await manifestProcessor.generateBundle(this)
-      await manifestProcessor.emitAssets(this)
+      await manifestProcessor.generateAssets(this)
     },
     transform(code, id) {
-      return manifestProcessor.transform(code, id)
+      return manifestProcessor.transform(code, id, this)
     },
     generateBundle() {
       manifestProcessor.generateManifest(this)

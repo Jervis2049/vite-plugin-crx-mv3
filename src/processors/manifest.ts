@@ -1,7 +1,7 @@
 import { PluginContext } from 'rollup'
 import type { ResolvedConfig, Plugin } from 'vite'
 import type { ChromeExtensionManifest, ContentScript } from '../manifest'
-import { resolve, dirname, normalize, basename } from 'path'
+import { resolve, dirname, basename } from 'path'
 import { readFileSync } from 'fs'
 import {
   isJsonString,
@@ -10,10 +10,12 @@ import {
   normalizeJsFilename
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
-import { compileSass } from '../compiler/compile-sass'
-import { compileLess } from '../compiler/compile-less'
 import { generageContentScripts, generateScriptForDev } from './content_scripts'
-
+import {
+  generageDynamicImportScript,
+  generageDynamicImportAsset
+} from './background'
+import { emitAsset } from './asset'
 interface Options {
   manifestPath: string
   port: number
@@ -100,21 +102,17 @@ export class ManifestProcessor {
     })
   }
 
-  public async transform(code: string, id: string) {
-    let data = ''
+  public async transform(code: string, id: string, context: PluginContext) {
+    let data = '',
+      srcDir = this.srcDir
     if (this.serviceWorkerFullPath === id) {
       data = `var PORT=${this.options.port};`
       data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
     }
-    if (code.indexOf('chrome.scripting.executeScript') > 0) {
-      code = code.replace(
-        /(?<=chrome.scripting.executeScript\()[\s\S]*?(?=\))/gm,
-        function (fileStr) {
-          return normalizeJsFilename(fileStr)
-        }
-      )
-    }
-    return data + code
+    let source = await generageDynamicImportScript(context, this, code)
+    source = await generageDynamicImportAsset(context, srcDir, source)
+
+    return data + source
   }
 
   public async generateBundle(context: PluginContext) {
@@ -146,22 +144,9 @@ export class ManifestProcessor {
   }
 
   // icon & css
-  public async emitAssets(context: PluginContext) {
+  public async generateAssets(context: PluginContext) {
     for (const path of this.assetPaths) {
-      const assetPath = resolve(this.srcDir, path)
-      context.addWatchFile(assetPath)
-      if (assetPath.endsWith('.less')) {
-        await compileLess(context, path, assetPath)
-      } else if (assetPath.endsWith('.scss')) {
-        await compileSass(context, path, assetPath)
-      } else {
-        let content = readFileSync(assetPath)
-        context.emitFile({
-          type: 'asset',
-          source: content,
-          fileName: normalize(path)
-        })
-      }
+      emitAsset(context, this.srcDir, path)
     }
   }
 }
