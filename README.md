@@ -75,7 +75,7 @@ Check out the examples in this repo.
 + crx-solid
 + crx-vue
 + crx-vue-drawer
-+ crx-vue-mult-page
++ crx-vue-multi-page
 
 Check out this [GIF](./docs/gif.md) preview.
 

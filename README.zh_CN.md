@@ -75,7 +75,7 @@ pnpm build
 + crx-solid
 + crx-vue
 + crx-vue-drawer
-+ crx-vue-mult-page
++ crx-vue-multi-page
 
 查看这个[GIF](./docs/gif.md)预览效果。
 
