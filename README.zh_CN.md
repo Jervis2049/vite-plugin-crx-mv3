@@ -8,7 +8,7 @@
 ## 特性
 
 + Chrome扩展页面和注入脚本支持使用vue、react等等；
-+ Content_scripts的css配置项支持.scss或.less文件；js配置项支持.js(x)或.ts(x)文件；
++ content_scripts的css配置项支持.scss或.less文件；js配置项支持.js(x)或.ts(x)文件；
 + background.service_worker配置项支持.js或.ts文件；
 + 在开发环境，修改content_scripts和background.service_worker之后，content_scripts注入的页面和Chrome扩展程序会自动重载；
 
@@ -32,7 +32,7 @@ yarn add vite-plugin-crx-mv3 -D
 - **Type:** `number`
 - **Default:** `8181`
 
-建立一个websocket连接。在contentscript和servicework文件发生变化时，通知Chrome扩展客户端重载。
+建立一个websocket连接。在content_scripts和service_worker文件发生变化时，通知Chrome扩展客户端重载。
 
 #### manifest
 

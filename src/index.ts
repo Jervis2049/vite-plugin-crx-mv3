@@ -46,7 +46,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       }
     } else {
       config.build.rollupOptions.input = [
-        ...(buildInput ? [buildInput] : []),
+        ...(buildInput && typeof buildInput === 'string' ? [buildInput] : []),
         ...entries
       ]
     }

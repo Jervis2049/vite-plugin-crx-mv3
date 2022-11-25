@@ -30,7 +30,7 @@ yarn add vite-plugin-crx-mv3 -D
 - **Type:** `number`
 - **Default:** `8181`
 
-Create a websocket connection. Notify Chrome extension clients to reload when changes are made to the contentscript and servicework files.
+Create a websocket connection. Notify Chrome extension clients to reload when changes are made to the content_scripts and service_worker files.
 
 #### manifest
 
