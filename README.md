@@ -79,6 +79,6 @@ Check out the examples in this repo.
 
 Check out this [GIF](./docs/gif.md) preview.
 
-## Notices
+## Notes
 + After starting the project, you need to refresh the page manually for the first time, so that the client and the server can establish a websocket connection.
 + You need to restart the project after modifying manifest.json.

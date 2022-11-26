@@ -14,7 +14,6 @@ importers:
       husky: ^8.0.1
       less: ^4.1.3
       lint-staged: ^13.0.3
-      lodash-es: ^4.17.21
       nodemon: ^2.0.19
       prettier: ^2.7.1
       rollup: ^3.2.2
@@ -24,7 +23,6 @@ importers:
       vite: ^3.0.9
       ws: ^8.9.0
     dependencies:
-      lodash-es: 4.17.21
       rollup: 3.2.3
       ws: 8.9.0
     devDependencies:
@@ -56,7 +54,19 @@ importers:
     devDependencies:
       vite-plugin-crx-mv3: link:../..
 
+  examples/crx-executescript-files:
+    specifiers:
+      vite-plugin-crx-mv3: workspace:*
+    devDependencies:
+      vite-plugin-crx-mv3: link:../..
+
   examples/crx-executescript-function:
+    specifiers:
+      vite-plugin-crx-mv3: workspace:*
+    devDependencies:
+      vite-plugin-crx-mv3: link:../..
+
+  examples/crx-insertcss-files:
     specifiers:
       vite-plugin-crx-mv3: workspace:*
     devDependencies:
@@ -141,7 +151,7 @@ importers:
       vite-plugin-crx-mv3: link:../..
       vue-tsc: 0.40.13_typescript@4.8.4
 
-  examples/crx-vue-mult-page:
+  examples/crx-vue-multi-page:
     specifiers:
       '@vitejs/plugin-vue': ^2.3.0
       typescript: ^4.5.4
@@ -2214,10 +2224,6 @@ packages:
     dependencies:
       p-locate: 5.0.0
     dev: true
-
-  /lodash-es/4.17.21:
-    resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
-    dev: false
 
   /lodash.merge/4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}

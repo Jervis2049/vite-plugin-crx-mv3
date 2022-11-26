@@ -18,12 +18,12 @@ export async function generageDynamicImportScript(
 ): Promise<string> {
   return code.replace(dynamicImportScriptRex, (match) =>
     match.replace(/(?<=(files:\[)?)["|'][\s\S]*?["|'](?=\]?)/gm, (fileStr) => {
+      const { rollup } = require('rollup')
       const outDir = manifestContext.options.viteConfig.build?.outDir || 'dist'
       const filePath = fileStr.replace(/"|'/g, '').trim()
       const fileFullPath = resolve(manifestContext.srcDir, filePath)
       const normalizePath = normalizeJsFilename(filePath)
       context.addWatchFile(fileFullPath)
-      const { rollup } = require('rollup')
       rollup({
         input: fileFullPath,
         plugins: manifestContext.plugins
@@ -32,7 +32,7 @@ export async function generageDynamicImportScript(
           file: `${outDir}/${normalizePath}`
         })
       })
-      return normalizePath
+      return `"${normalizePath}"`
     })
   )
 }
@@ -46,7 +46,7 @@ export async function generageDynamicImportAsset(
     match.replace(/(?<=(files:\[)?)["|'][\s\S]*?["|'](?=\]?)/gm, (fileStr) => {
       const filePath = fileStr.replace(/"|'/g, '').trim()
       emitAsset(context, srcDir, filePath)
-      return normalizeCssFilename(filePath)
+      return `"${normalizeCssFilename(filePath)}"`
     })
   )
 }

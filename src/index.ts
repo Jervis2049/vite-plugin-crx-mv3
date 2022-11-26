@@ -25,7 +25,6 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
   }
 
   let socket: any
-  let manifestPath: string | undefined
   let changedFilePath: string
   let manifestProcessor
   let srcDir = dirname(manifest)
@@ -117,12 +116,11 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     async configResolved(config: ResolvedConfig) {
       // Open socket service
       await websocketServerStart(config)
-      // manifest.json path
-      manifestPath = normalizePathResolve(config.root, manifest)
+
       manifestProcessor = new ManifestProcessor({
-        manifestPath,
         port,
-        viteConfig: config
+        viteConfig: config,
+        manifestPath: normalizePathResolve(config.root, manifest)
       })
       const entries = [
         manifestProcessor.defaultPopupPath,
