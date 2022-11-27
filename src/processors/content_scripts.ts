@@ -77,7 +77,7 @@ export async function generateScriptForDev(
   manifestContext
 ): Promise<Record<string, any>> {
   let { viteConfig, port } = manifestContext.options
-  if (viteConfig.mode === 'production') manifestContext.manifestContent
+  if (viteConfig.mode === 'production') return manifestContext.manifestContent
   let code = `var PORT=${port};`
   if (!manifestContext.serviceWorkerPath) {
     let content = readFileSync(

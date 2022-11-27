@@ -1,4 +1,5 @@
 import type { Plugin, ResolvedConfig } from 'vite'
+import type { Processor } from './manifest'
 import { WebSocketServer } from 'ws'
 import { resolve, dirname, extname, basename } from 'path'
 import { normalizePath, normalizePathResolve } from './utils'
@@ -24,9 +25,9 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     )
   }
 
-  let socket: any
+  let socket
   let changedFilePath: string
-  let manifestProcessor
+  let manifestProcessor: Processor
   let srcDir = dirname(manifest)
 
   function setRollupInput(config: ResolvedConfig, entries: string[]) {
@@ -127,9 +128,12 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         manifestProcessor.optionsPagePath
       ]
         .filter((x) => !!x)
-        .map((path) => resolve(srcDir, path))
-        .concat(manifestProcessor.serviceWorkerFullPath)
-
+        .map((path) => resolve(srcDir, path!))
+        .concat(
+          manifestProcessor.serviceWorkerFullPath
+            ? [manifestProcessor.serviceWorkerFullPath]
+            : []
+        )
       // Set popup.html, options.html, service_worker srcipt as rollup entry
       setRollupInput(config, entries)
       // Rewrite output.entryFileNames to modify build path of assets.

@@ -1,3 +1,8 @@
+## 0.0.3 (2022-11-27)
+
++ feat: support dynamic insertion of scripts and css files.
++ chore: optimized code structure.
+
 ## 0.0.2 (2022-11-18)
 
 + fix: Set the configuration item shims of tsup to true to solve the problem that import.meta.url is undefined.

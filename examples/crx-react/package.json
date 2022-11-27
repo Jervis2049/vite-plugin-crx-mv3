@@ -1,5 +1,5 @@
 {
-  "name": "crx-react-basic",
+  "name": "crx-react",
   "version": "0.0.1",
   "scripts": {
     "dev": "vite build --watch --mode development",

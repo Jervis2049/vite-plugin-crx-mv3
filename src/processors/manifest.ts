@@ -23,15 +23,15 @@ interface Options {
 }
 
 export class ManifestProcessor {
-  public plugins: Plugin[]
-  public serviceWorkerPath: string | undefined
-  public serviceWorkerFullPath: string | undefined
-  public defaultPopupPath: string | undefined
-  public optionsPagePath: string | undefined
-  public assetPaths: string[] = [] // css & icons
-  public srcDir: string
-  public manifestContent: Partial<ChromeExtensionManifest> = {}
-  public originalManifestContent: Partial<ChromeExtensionManifest> = {}
+  plugins: Plugin[]
+  serviceWorkerPath: string | undefined
+  serviceWorkerFullPath: string | undefined
+  defaultPopupPath: string | undefined
+  optionsPagePath: string | undefined
+  assetPaths: string[] = [] // css & icons
+  srcDir: string
+  manifestContent: Partial<ChromeExtensionManifest> = {}
+  originalManifestContent: Partial<ChromeExtensionManifest> = {}
 
   constructor(private options = {} as Options) {
     this.options = options
@@ -39,10 +39,10 @@ export class ManifestProcessor {
     this.plugins = options.viteConfig.plugins.filter(
       (p) => p.name !== VITE_PLUGIN_CRX_MV3
     )
-    this.readManifest()
+    this.loadManifest()
   }
 
-  public async readManifest() {
+  public async loadManifest() {
     const manifestRaw = readFileSync(this.options.manifestPath, 'utf8')
     if (!isJsonString(manifestRaw)) {
       throw new Error('The manifest.json is not valid.')
@@ -61,10 +61,12 @@ export class ManifestProcessor {
     }
     this.serviceWorkerPath =
       this.originalManifestContent?.background?.service_worker
-    this.serviceWorkerFullPath = normalizePathResolve(
-      this.srcDir,
-      this.serviceWorkerPath
-    )
+    if (this.serviceWorkerPath) {
+      this.serviceWorkerFullPath = normalizePathResolve(
+        this.srcDir,
+        this.serviceWorkerPath
+      )
+    }
     this.defaultPopupPath = this.originalManifestContent?.action?.default_popup
     this.optionsPagePath = this.originalManifestContent.options_page
   }

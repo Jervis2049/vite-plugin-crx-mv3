@@ -68,14 +68,16 @@ pnpm build
 ## Examples
 Check out the examples in this repo.
 
-+ crx-contentscript-sass-less
-+ crx-executescript-function
-+ crx-jquery
 + crx-react
 + crx-solid
++ crx-jquery
 + crx-vue
 + crx-vue-drawer
 + crx-vue-multi-page
++ crx-contentscript-sass-less
++ crx-executescript-function
++ crx-executescript-files
++ crx-insertcss-files
 
 Check out this [GIF](./docs/gif.md) preview.
 
