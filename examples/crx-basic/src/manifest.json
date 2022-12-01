@@ -1,0 +1,15 @@
+{
+  "name": "crx-basic",
+  "version": "1.0.0",
+  "action": {
+    "default_popup": "../popup.html"
+  },
+  "content_scripts": [{
+    "matches": [ "<all_urls>" ],
+    "js": ["content-scripts/content.js"]
+  }],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "manifest_version": 3
+}
