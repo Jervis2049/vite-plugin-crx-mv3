@@ -7,7 +7,7 @@
 
 ## Features
 
-+ Chrome extension pages and injected scripts support the use of vue, react, etc.
++ Chrome extension pages and content scripts supporting the use of vue, react, etc..
 + content_scripts css configuration item supports .scss or .less files; js configuration item supports .js(x) or .ts(x) files.
 + background.service_worker configuration item supports .js or .ts files.
 + In development environments, content_scripts injected pages and Chrome extensions are automatically reloaded after content_scripts and background.service_worker are modified.
@@ -68,6 +68,7 @@ pnpm build
 ## Examples
 Check out the examples in this repo.
 
++ crx-basic
 + crx-react
 + crx-solid
 + crx-jquery

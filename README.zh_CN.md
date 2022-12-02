@@ -7,7 +7,7 @@
 
 ## 功能
 
-+ Chrome扩展页面和注入脚本支持使用vue、react等等；
++ Chrome扩展页面和内容脚本支持使用vue、react等等；
 + content_scripts的css配置项支持.scss或.less文件；js配置项支持.js(x)或.ts(x)文件；
 + background.service_worker配置项支持.js或.ts文件；
 + 在开发环境，修改content_scripts和background.service_worker之后，content_scripts注入的页面和Chrome扩展程序会自动重载；
@@ -68,6 +68,7 @@ pnpm build
 ## 例子
 在本仓库下的examples目录下：
 
++ crx-basic
 + crx-react
 + crx-solid
 + crx-jquery
