@@ -1,4 +1,4 @@
-import type { Plugin } from 'vite'
+import type { ResolvedConfig, Plugin } from 'vite'
 
 export type Icon = string
 export type MatchPattern = string
@@ -420,12 +420,20 @@ export interface WebAccessibleResource {
   use_dynamic_url?: boolean
 }
 
+export interface ProcessorOptions {
+  manifestPath: string
+  port: number
+  viteConfig: ResolvedConfig
+}
+
 export interface Processor {
+  options: ProcessorOptions
   plugins: Plugin[]
   serviceWorkerPath?: string | undefined
   serviceWorkerFullPath?: string | undefined
   defaultPopupPath?: string | undefined
   optionsPagePath?: string | undefined
+  devtoolsPagePath?: string | undefined
   assetPaths: string[]
   srcDir: string
   manifestContent: Partial<ChromeExtensionManifest>

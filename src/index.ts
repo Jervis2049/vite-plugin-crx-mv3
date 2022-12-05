@@ -113,7 +113,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
 
   return {
     name: VITE_PLUGIN_CRX_MV3,
-    enforce: 'pre',
+    apply: 'build',
     async configResolved(config: ResolvedConfig) {
       // Open socket service
       await websocketServerStart(config)
@@ -123,18 +123,17 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         viteConfig: config,
         manifestPath: normalizePathResolve(config.root, manifest)
       })
+
       const entries = [
         manifestProcessor.defaultPopupPath,
-        manifestProcessor.optionsPagePath
+        manifestProcessor.optionsPagePath,
+        manifestProcessor.devtoolsPagePath,
+        manifestProcessor.serviceWorkerPath
       ]
         .filter((x) => !!x)
         .map((path) => resolve(srcDir, path!))
-        .concat(
-          manifestProcessor.serviceWorkerFullPath
-            ? [manifestProcessor.serviceWorkerFullPath]
-            : []
-        )
-      // Set popup.html, options.html, service_worker srcipt as rollup entry
+
+      // input
       setRollupInput(config, entries)
       // Rewrite output.entryFileNames to modify build path of assets.
       handleBuildPath(config)

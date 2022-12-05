@@ -1,1 +1,1 @@
-console.log('service work')
+console.log('service worker')

@@ -16,12 +16,12 @@
 ### Install
 
 ```bash
-# pnpm
-pnpm add vite-plugin-crx-mv3 -D
 # npm
 npm install vite-plugin-crx-mv3 -D
-# yarn
+# or yarn
 yarn add vite-plugin-crx-mv3 -D
+# or pnpm
+pnpm add vite-plugin-crx-mv3 -D
 ```
 ### Plugin options
 
@@ -60,9 +60,9 @@ export default defineConfig({
 
 ```bash
 # development
-pnpm dev
+npm run dev
 # production
-pnpm build
+npm run build
 ```
 
 ## Examples
@@ -85,3 +85,4 @@ Check out this [GIF](./docs/gif.md) preview.
 ## Notes
 + After starting the project, you need to refresh the page manually for the first time, so that the client and the server can establish a websocket connection.
 + You need to restart the project after modifying manifest.json.
++ The html file needs to be placed outside the src directory.

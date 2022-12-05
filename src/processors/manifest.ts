@@ -1,6 +1,10 @@
 import { PluginContext } from 'rollup'
-import type { ResolvedConfig, Plugin } from 'vite'
-import type { ChromeExtensionManifest, ContentScript } from '../manifest'
+import type { Plugin } from 'vite'
+import type {
+  ChromeExtensionManifest,
+  ContentScript,
+  ProcessorOptions
+} from '../manifest'
 import { resolve, dirname, basename } from 'path'
 import { readFileSync } from 'fs'
 import {
@@ -16,11 +20,6 @@ import {
   generageDynamicImportAsset
 } from './background'
 import { emitAsset } from './asset'
-interface Options {
-  manifestPath: string
-  port: number
-  viteConfig: ResolvedConfig
-}
 
 export class ManifestProcessor {
   plugins: Plugin[]
@@ -28,12 +27,14 @@ export class ManifestProcessor {
   serviceWorkerFullPath: string | undefined
   defaultPopupPath: string | undefined
   optionsPagePath: string | undefined
+  devtoolsPagePath: string | undefined
   assetPaths: string[] = [] // css & icons
   srcDir: string
   manifestContent: Partial<ChromeExtensionManifest> = {}
   originalManifestContent: Partial<ChromeExtensionManifest> = {}
+  options: ProcessorOptions
 
-  constructor(private options = {} as Options) {
+  constructor(options: ProcessorOptions) {
     this.options = options
     this.srcDir = dirname(options.manifestPath)
     this.plugins = options.viteConfig.plugins.filter(
@@ -61,14 +62,9 @@ export class ManifestProcessor {
     }
     this.serviceWorkerPath =
       this.originalManifestContent?.background?.service_worker
-    if (this.serviceWorkerPath) {
-      this.serviceWorkerFullPath = normalizePathResolve(
-        this.srcDir,
-        this.serviceWorkerPath
-      )
-    }
     this.defaultPopupPath = this.originalManifestContent?.action?.default_popup
     this.optionsPagePath = this.originalManifestContent.options_page
+    this.devtoolsPagePath = this.originalManifestContent.devtools_page
   }
 
   //generate manifest.json
@@ -80,12 +76,19 @@ export class ManifestProcessor {
       manifestContent.background.service_worker = normalizeJsFilename(
         this.serviceWorkerPath
       )
+      this.serviceWorkerFullPath = normalizePathResolve(
+        this.srcDir,
+        this.serviceWorkerPath
+      )
     }
     if (this.defaultPopupPath) {
       manifestContent.action.default_popup = basename(this.defaultPopupPath)
     }
     if (this.optionsPagePath) {
       manifestContent.options_page = basename(this.optionsPagePath)
+    }
+    if (this.devtoolsPagePath) {
+      manifestContent.devtools_page = basename(this.devtoolsPagePath)
     }
     if (Array.isArray(manifestContent.content_scripts)) {
       manifestContent.content_scripts.forEach((item: ContentScript) => {

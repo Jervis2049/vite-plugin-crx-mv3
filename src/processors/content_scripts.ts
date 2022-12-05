@@ -43,8 +43,8 @@ export async function generageContentScripts(
           const cssSource = output.filter((x) =>
             importedCss.includes(x.fileName)
           )
-          const assetsSource = output.filter((item) =>
-            importedAssets.includes(item.fileName)
+          const assetsSource = output.filter((x) =>
+            importedAssets.includes(x.fileName)
           )
           if (cssSource.length) {
             script.css = [

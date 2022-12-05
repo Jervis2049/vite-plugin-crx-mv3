@@ -19,7 +19,7 @@ export async function generageDynamicImportScript(
   return code.replace(dynamicImportScriptRex, (match) =>
     match.replace(/(?<=(files:\[)?)["|'][\s\S]*?["|'](?=\]?)/gm, (fileStr) => {
       const { rollup } = require('rollup')
-      const outDir = manifestContext.options.viteConfig.build?.outDir || 'dist'
+      const outDir = manifestContext.options.viteConfig.build.outDir
       const filePath = fileStr.replace(/"|'/g, '').trim()
       const fileFullPath = resolve(manifestContext.srcDir, filePath)
       const normalizePath = normalizeJsFilename(filePath)

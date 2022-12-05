@@ -17,12 +17,12 @@
 ### 安装
 
 ```bash
-# pnpm
-pnpm add vite-plugin-crx-mv3 -D
 # npm
 npm install vite-plugin-crx-mv3 -D
-# yarn
+# or yarn
 yarn add vite-plugin-crx-mv3 -D
+# or pnpm
+pnpm add vite-plugin-crx-mv3 -D
 ```
 
 ### 插件选项
@@ -85,3 +85,4 @@ pnpm build
 ## 注意事项
 + 启动项目后，第一次需要手动刷新页面，这样客户端和服务端便建立了websocket连接。
 + 修改manifest.json后需要重新运行命令启动。
++ html文件需要放在src目录外层。
