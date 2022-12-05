@@ -79,6 +79,7 @@ pnpm build
 + crx-executescript-function
 + crx-executescript-files
 + crx-insertcss-files
++ crx-vue-newtab-AntdUI
 
 查看这个[GIF](./docs/gif.md)预览效果。
 

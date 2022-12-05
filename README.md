@@ -79,6 +79,7 @@ Check out the examples in this repo.
 + crx-executescript-function
 + crx-executescript-files
 + crx-insertcss-files
++ crx-vue-newtab-AntdUI
 
 Check out this [GIF](./docs/gif.md) preview.
 

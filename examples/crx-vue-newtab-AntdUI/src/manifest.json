@@ -1,0 +1,15 @@
+{
+  "name": "crx-vue-newtab",
+  "description": "A Chrome extension demo.",
+  "version": "1.0.0",
+  "icons": {},
+  "action": {},
+  "content_scripts": [{
+    "matches": [ "<all_urls>" ],
+    "js": [ "content-scripts/test.js"]
+  }],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "manifest_version": 3
+}
