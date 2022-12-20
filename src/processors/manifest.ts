@@ -11,7 +11,8 @@ import {
   isJsonString,
   normalizeCssFilename,
   normalizePathResolve,
-  normalizeJsFilename
+  normalizeJsFilename,
+  isObject
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
 import { generageContentScripts, generateScriptForDev } from './content_scripts'
@@ -29,6 +30,7 @@ export class ManifestProcessor {
   optionsPagePath: string | undefined
   devtoolsPagePath: string | undefined
   assetPaths: string[] = [] // css & icons
+  contentScriptPaths: string[] = []
   srcDir: string
   manifestContent: Partial<ChromeExtensionManifest> = {}
   originalManifestContent: Partial<ChromeExtensionManifest> = {}
@@ -62,6 +64,12 @@ export class ManifestProcessor {
     }
     this.serviceWorkerPath =
       this.originalManifestContent?.background?.service_worker
+    if (this.serviceWorkerPath) {
+      this.serviceWorkerFullPath = normalizePathResolve(
+        this.srcDir,
+        this.serviceWorkerPath
+      )
+    }
     this.defaultPopupPath = this.originalManifestContent?.action?.default_popup
     this.optionsPagePath = this.originalManifestContent.options_page
     this.devtoolsPagePath = this.originalManifestContent.devtools_page
@@ -74,10 +82,6 @@ export class ManifestProcessor {
 
     if (this.serviceWorkerPath) {
       manifestContent.background.service_worker = normalizeJsFilename(
-        this.serviceWorkerPath
-      )
-      this.serviceWorkerFullPath = normalizePathResolve(
-        this.srcDir,
         this.serviceWorkerPath
       )
     }
@@ -121,23 +125,37 @@ export class ManifestProcessor {
   }
 
   public async generateBundle(context: PluginContext) {
-    this.manifestContent = await generageContentScripts(context, this)
+    const { contentScriptPaths, manifestContent } =
+      await generageContentScripts(context, this)
+    this.contentScriptPaths = contentScriptPaths
+    this.manifestContent = manifestContent
     this.manifestContent = await generateScriptForDev(context, this)
+    //watch manifest.json
+    if (this.options.manifestPath) {
+      context.addWatchFile(this.options.manifestPath)
+    }
   }
 
   public async getAssetPaths() {
+    this.loadManifest()
     this.manifestContent = JSON.parse(
       JSON.stringify(this.originalManifestContent)
     )
     this.assetPaths = []
-    if (this.manifestContent.icons) {
-      const icons = Object.keys(this.manifestContent.icons)
-      if (Array.isArray(icons)) {
-        let iconPaths = icons.map((key) => {
-          return this.manifestContent.icons?.[key]
-        })
-        this.assetPaths = [...this.assetPaths, ...iconPaths]
-      }
+    const defaultIcon = this.manifestContent?.action?.default_icon
+    if (defaultIcon && typeof defaultIcon === 'string') {
+      this.assetPaths = [defaultIcon]
+    } else if (isObject(defaultIcon)) {
+      let defaultIconPaths = Object.keys(defaultIcon).map((key) => {
+        return defaultIcon[key]
+      })
+      this.assetPaths = [...this.assetPaths, ...defaultIconPaths]
+    }
+    if (isObject(this.manifestContent.icons)) {
+      let iconPaths = Object.keys(this.manifestContent.icons).map((key) => {
+        return this.manifestContent.icons?.[key]
+      })
+      this.assetPaths = [...this.assetPaths, ...iconPaths]
     }
     if (Array.isArray(this.manifestContent.content_scripts)) {
       this.manifestContent.content_scripts.forEach((item: ContentScript) => {

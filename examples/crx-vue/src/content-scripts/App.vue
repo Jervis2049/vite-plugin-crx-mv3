@@ -6,7 +6,7 @@
 <script setup>
 
 function handleClick() {
-  alert('This is a fun Chrome extension.')
+  alert('This is a fun Chrome extension。')
 }
 
 </script>

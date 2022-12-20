@@ -2,7 +2,7 @@ import type { Plugin, ResolvedConfig } from 'vite'
 import type { Processor } from './manifest'
 import { WebSocketServer } from 'ws'
 import { resolve, dirname, extname, basename } from 'path'
-import { normalizePath, normalizePathResolve } from './utils'
+import { normalizePath, normalizePathResolve, isObject } from './utils'
 import { ManifestProcessor } from './processors/manifest'
 import { httpServerStart } from './http'
 import { VITE_PLUGIN_CRX_MV3, UPDATE_CONTENT } from './constants'
@@ -27,6 +27,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
 
   let socket
   let changedFilePath: string
+  let manifestPath: string
   let manifestProcessor: Processor
   let srcDir = dirname(manifest)
 
@@ -34,7 +35,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     let buildInput = config.build.rollupOptions?.input
     if (Array.isArray(buildInput)) {
       config.build.rollupOptions.input = [...buildInput, ...entries]
-    } else if (typeof buildInput === 'object') {
+    } else if (isObject(buildInput)) {
       const entryObj = {}
       entries.forEach((item) => {
         const name = basename(item, extname(item))
@@ -85,16 +86,20 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     const server = serverOptions.server
     port = serverOptions.port
     const wss = new WebSocketServer({ noServer: true })
-    wss.on('connection', function connection(ws) {
-      console.log(`\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client connected.`)
+    wss.on('connection', function connection(ws, request) {
+      const crxUrl = request.url === '/crx'
+      if (crxUrl) {
+        console.log(`\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client connected.`)
+      }
       ws.on('message', () => {
         ws.send('keep websocket alive.')
       })
-      ws.on('close', () =>
-        console.log(
-          `\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client disconnected.`
-        )
-      )
+      ws.on('close', () => {
+        if (crxUrl)
+          console.log(
+            `\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client disconnected.`
+          )
+      })
       socket = ws
     })
     server.on('upgrade', function upgrade(request, socket, head) {
@@ -117,11 +122,11 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     async configResolved(config: ResolvedConfig) {
       // Open socket service
       await websocketServerStart(config)
-
+      manifestPath = normalizePathResolve(config.root, manifest)
       manifestProcessor = new ManifestProcessor({
         port,
-        viteConfig: config,
-        manifestPath: normalizePathResolve(config.root, manifest)
+        manifestPath,
+        viteConfig: config
       })
 
       const entries = [
@@ -156,8 +161,8 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     writeBundle() {
       if (socket) {
         if (
-          changedFilePath.includes('content-scripts') ||
-          changedFilePath === manifestProcessor.serviceWorkerFullPath
+          manifestProcessor.contentScriptPaths.includes(changedFilePath) ||
+          changedFilePath === manifestPath
         ) {
           socket.send(UPDATE_CONTENT)
         }

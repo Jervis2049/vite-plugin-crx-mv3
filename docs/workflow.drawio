@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="_M_fOaLHztckxdP3wiTB" name="第 1 页">
-        <mxGraphModel dx="716" dy="575" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" math="0" shadow="0">
+        <mxGraphModel dx="729" dy="314" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="1654" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -115,7 +115,7 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="QyMh-5r2N0dAt28rJuuR-64" value="chrome.tabs.reload、&lt;br&gt;window.location.reload" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="QyMh-5r2N0dAt28rJuuR-63" vertex="1" connectable="0">
+                <mxCell id="QyMh-5r2N0dAt28rJuuR-64" value="&lt;br&gt;window.location.reload" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="QyMh-5r2N0dAt28rJuuR-63" vertex="1" connectable="0">
                     <mxGeometry x="0.4794" y="-2" relative="1" as="geometry">
                         <mxPoint x="19" y="-5" as="offset"/>
                     </mxGeometry>

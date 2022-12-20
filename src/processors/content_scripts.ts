@@ -3,6 +3,7 @@ import { ChunkMetadata } from 'vite'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
 import {
+  normalizeJsFilename,
   relaceCssUrlPrefix,
   relaceResourcePathPrefix,
   convertIntoIIFE
@@ -21,17 +22,25 @@ export async function generageContentScripts(
   manifestContext
 ): Promise<Record<string, any>> {
   const { rollup } = await import('rollup')
+  let contentScriptPaths: string[] = []
   for (const script of manifestContext.manifestContent.content_scripts || []) {
     for (const js of script.js || []) {
+      const input = resolve(manifestContext.srcDir, js)
       const bundle = await rollup({
-        input: resolve(manifestContext.srcDir, js),
+        input,
         plugins: manifestContext.plugins
       })
       try {
         const { output } = await bundle.generate({
-          entryFileNames: 'content-scripts/[name].js'
+          entryFileNames: normalizeJsFilename(js)
           // format: "iife"
         })
+
+        contentScriptPaths = [
+          ...contentScriptPaths,
+          ...bundle.watchFiles.filter((p) => !p.includes('node_modules'))
+        ]
+
         bundle.watchFiles.forEach((path) => {
           context.addWatchFile(path)
         })
@@ -68,7 +77,10 @@ export async function generageContentScripts(
       }
     }
   }
-  return manifestContext.manifestContent
+  return {
+    manifestContent: manifestContext.manifestContent,
+    contentScriptPaths
+  }
 }
 
 // generate scripts for dev

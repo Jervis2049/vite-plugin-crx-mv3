@@ -60,9 +60,9 @@ export default defineConfig({
 ### 运行
 ```bash
 # development
-pnpm dev
+npm run dev 
 # production
-pnpm build
+npm run build
 ```
 
 ## 例子

@@ -1,4 +1,4 @@
 {
-  "watch": ["./dist", "./examples/crx-executescript-function/vite.config.ts"],
-  "exec": "pnpm -C examples/crx-executescript-function dev"
+  "watch": ["./dist", "./examples/crx-jquery/vite.config.ts"],
+  "exec": "pnpm -C examples/crx-jquery dev"
 }
