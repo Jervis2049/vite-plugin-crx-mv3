@@ -10,7 +10,8 @@
     "sass": "^1.56.1"
   },
   "devDependencies": {
-    "vite-plugin-crx-mv3": "workspace:*"
+    "vite-plugin-crx-mv3": "workspace:*",
+    "vite": "^3.0.9"
   },
   "license": "ISC"
 }
