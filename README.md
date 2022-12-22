@@ -7,9 +7,9 @@
 
 ## Features
 
-+ Chrome extension pages and content scripts supporting the use of vue, react, etc..
-+ content_scripts css configuration item supports .scss or .less files; js configuration item supports .js(x) or .ts(x) files.
-+ background.service_worker configuration item supports .js or .ts files.
++ Chrome extension pages and content scripts supporting the use of vue, react, etc.
++ Support sass/less in manifest.json.
++ Support Typescript.
 + In development environments, content_scripts injected pages and Chrome extensions are automatically reloaded after content_scripts and background.service_worker are modified.
 
 ## Usage
@@ -80,10 +80,11 @@ Check out the examples in this repo.
 + crx-executescript-files
 + crx-insertcss-files
 + crx-vue-newtab-AntdUI
++ crx-devtools
 
 Check out this [GIF](./docs/gif.md) preview.
 
 ## Notes
 + After starting the project, you need to refresh the page manually for the first time, so that the client and the server can establish a websocket connection.
-+ You need to restart the project after modifying manifest.json.
++ In manifest.json, when the background.service_worker, action.default_popup, options_page, devtools_page configuration is changed, you need to restart the project.
 + The html file needs to be placed outside the src directory.

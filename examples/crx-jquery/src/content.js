@@ -1,2 +1,6 @@
-var a = 18888888
-console.log('vvv',a);
+import $ from 'jquery'
+
+window.onload = function(){
+  console.log($('body'))
+}
+

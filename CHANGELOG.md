@@ -1,3 +1,9 @@
+## 0.0.4 (2022-11-28)
++ feat: Support devtools_page configuration in manifest.json. 
++ fix: The content_scripts path is no longer restricted.
++ fix: Set `apply` to `build`.
++ chroe: Listen for changes to manifest.json and re-fetch the contents of manifest.json.
+
 ## 0.0.3 (2022-11-27)
 
 + feat: support dynamic insertion of scripts and css files.
@@ -12,8 +18,8 @@
 ## 0.0.1 (2022-11-17)
 ### Features
 
-+ Chrome extension pages and injected scripts support the use of vue, react, etc.
-+ content_scripts css configuration item supports .scss or .less files; js configuration item supports .js(x) or .ts(x) files.
-+ background.service_worker configuration item supports .js or .ts files.
++ Chrome extension pages and content scripts supporting the use of vue, react, etc.
++ Support sass/less in manifest.json.
++ Support Typescript.
 + In development environments, content_scripts injected pages and Chrome extensions are automatically reloaded after content_scripts and background.service_worker are modified.
 

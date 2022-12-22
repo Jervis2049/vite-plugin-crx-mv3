@@ -1,7 +1,7 @@
 {
   "name": "crx-jquery",
   "description": "A Chrome extension demo.",
-  "version": "1.0.5",
+  "version": "0.0.1",
   "icons": {
     "16": "assets/icons/icon16.png",
     "48": "assets/icons/icon48.png",

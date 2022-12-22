@@ -8,8 +8,8 @@
 ## 功能
 
 + Chrome扩展页面和内容脚本支持使用vue、react等等；
-+ content_scripts的css配置项支持.scss或.less文件；js配置项支持.js(x)或.ts(x)文件；
-+ background.service_worker配置项支持.js或.ts文件；
++ 支持在manifest.json中配置sass/less；
++ 支持Typescript；
 + 在开发环境，修改content_scripts和background.service_worker之后，content_scripts注入的页面和Chrome扩展程序会自动重载；
 
 ## 用法
@@ -80,10 +80,11 @@ npm run build
 + crx-executescript-files
 + crx-insertcss-files
 + crx-vue-newtab-AntdUI
++ crx-devtools
 
 查看这个[GIF](./docs/gif.md)预览效果。
 
 ## 注意事项
 + 启动项目后，第一次需要手动刷新页面，这样客户端和服务端便建立了websocket连接。
-+ 修改manifest.json后需要重新运行命令启动。
++ 在manifest.json中，当background.service_worker, action.default_popup, options_page, devtools_page配置发生变化时，需要重启项目。
 + html文件需要放在src目录外层。

@@ -4,3 +4,4 @@ chrome.action.onClicked.addListener(function() {
     chrome.tabs.sendMessage(tabs[0].id, "toggle");
   })
 });
+

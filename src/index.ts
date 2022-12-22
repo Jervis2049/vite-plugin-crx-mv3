@@ -86,19 +86,15 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     const server = serverOptions.server
     port = serverOptions.port
     const wss = new WebSocketServer({ noServer: true })
-    wss.on('connection', function connection(ws, request) {
-      const crxUrl = request.url === '/crx'
-      if (crxUrl) {
-        console.log(`\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client connected.`)
-      }
+    wss.on('connection', function connection(ws) {
+      console.log(`\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client connected.`)
       ws.on('message', () => {
         ws.send('keep websocket alive.')
       })
       ws.on('close', () => {
-        if (crxUrl)
-          console.log(
-            `\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client disconnected.`
-          )
+        console.log(
+          `\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client disconnected.`
+        )
       })
       socket = ws
     })
@@ -162,6 +158,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       if (socket) {
         if (
           manifestProcessor.contentScriptPaths.includes(changedFilePath) ||
+          changedFilePath === manifestProcessor.serviceWorkerFullPath ||
           changedFilePath === manifestPath
         ) {
           socket.send(UPDATE_CONTENT)

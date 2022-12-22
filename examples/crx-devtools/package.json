@@ -1,0 +1,12 @@
+{
+  "name": "crx-devtools",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite-plugin-crx-mv3": "workspace:*"
+  },
+  "license": "ISC"
+}

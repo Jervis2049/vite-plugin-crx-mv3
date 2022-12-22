@@ -1,0 +1,7 @@
+{
+  "name": "crx-devtools",
+  "version": "1.0.0",
+  "action": {},
+  "devtools_page": "../devtools.html",
+  "manifest_version": 3
+}

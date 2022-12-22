@@ -1,4 +1,4 @@
-import { PluginContext } from 'rollup'
+import rollup, { PluginContext } from 'rollup'
 import type { Plugin } from 'vite'
 import type {
   ChromeExtensionManifest,
@@ -43,6 +43,13 @@ export class ManifestProcessor {
       (p) => p.name !== VITE_PLUGIN_CRX_MV3
     )
     this.loadManifest()
+
+    const manifestWatcher = rollup.watch({ input: options.manifestPath })
+    manifestWatcher.on('event', (event) => {
+      if (event.code === 'START') {
+        this.loadManifest()
+      }
+    })
   }
 
   public async loadManifest() {
@@ -137,7 +144,6 @@ export class ManifestProcessor {
   }
 
   public async getAssetPaths() {
-    this.loadManifest()
     this.manifestContent = JSON.parse(
       JSON.stringify(this.originalManifestContent)
     )
