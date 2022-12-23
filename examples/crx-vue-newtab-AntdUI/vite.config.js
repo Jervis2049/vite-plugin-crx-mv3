@@ -10,6 +10,7 @@ const pathResolve = (pathStr) => {
 }
 
 export default defineConfig(({ mode }) => {
+  const isProd = mode === 'production'
   return {
     resolve: {
       alias: {
@@ -28,8 +29,8 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     build: {
-      emptyOutDir: mode == 'production',
-      minify: 'esbuild',
+      emptyOutDir: isProd,
+      minify: isProd ? 'esbuild' : false,
       chunkSizeWarningLimit: 64000,
       rollupOptions: {
         input: ['index.html'],

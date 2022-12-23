@@ -6,7 +6,7 @@
   "action": {},
   "content_scripts": [{
     "matches": [ "<all_urls>" ],
-    "js": [ "content-scripts/test.js"]
+    "js": [ "content.js"]
   }],
   "background": {
     "service_worker": "background.js"
