@@ -2,7 +2,7 @@
 + feat: Support devtools_page configuration in manifest.json. 
 + fix: The content_scripts path is no longer restricted.
 + fix: Set `apply` to `build`.
-+ chroe: Listen for changes to manifest.json and re-fetch the contents of manifest.json.
++ chore: Listen for changes to manifest.json and re-fetch the contents of manifest.json.
 
 ## 0.0.3 (2022-11-27)
 
