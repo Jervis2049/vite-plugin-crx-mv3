@@ -1,0 +1,13 @@
+{
+  "name": "crx-vue-bookmarks-antd",
+  "description": "A Chrome extension demo.",
+  "version": "1.0.0",
+  "icons": {},
+  "action": {
+    "default_popup": "../popup.html"
+  },
+  "permissions": [
+    "bookmarks"
+  ],
+  "manifest_version": 3
+}

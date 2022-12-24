@@ -160,10 +160,25 @@ importers:
       vite-plugin-crx-mv3: link:../..
       vue-tsc: 0.40.13_typescript@4.8.4
 
-  examples/crx-vue-bookmarks-AntdUI:
+  examples/crx-vue-bookmarks-antd:
     specifiers:
+      '@ant-design/icons-vue': ^6.1.0
+      '@vitejs/plugin-vue': ^2.3.0
+      ant-design-vue: ^3.2.15
+      less: ^4.1.3
+      unplugin-vue-components: ^0.22.11
+      vite: ^3.0.9
       vite-plugin-crx-mv3: workspace:*
+      vue: ^3.2.25
+    dependencies:
+      '@ant-design/icons-vue': 6.1.0_vue@3.2.41
+      ant-design-vue: 3.2.15_vue@3.2.41
+      less: 4.1.3
+      vue: 3.2.41
     devDependencies:
+      '@vitejs/plugin-vue': 2.3.4_vite@3.1.8+vue@3.2.41
+      unplugin-vue-components: 0.22.11_vue@3.2.41
+      vite: 3.1.8_less@4.1.3
       vite-plugin-crx-mv3: link:../..
 
   examples/crx-vue-drawer:
@@ -200,7 +215,7 @@ importers:
       vite-plugin-crx-mv3: link:../..
       vue-tsc: 0.40.13_typescript@4.8.4
 
-  examples/crx-vue-newtab-AntdUI:
+  examples/crx-vue-newtab-antd:
     specifiers:
       '@ant-design/icons-vue': ^6.1.0
       '@vitejs/plugin-vue': ^2.3.0
@@ -1079,18 +1094,12 @@ packages:
     resolution: {integrity: sha512-nne9/IiQ/hzIhY6pdDnbBtz7DjPTKrY00P/zvPSm5pOFkl6xuGrGnXn/VtTNNfNtAfZ9/1RtehkszU9qcTii0Q==}
     dev: true
 
-  /acorn-jsx/5.3.2_acorn@8.8.0:
+  /acorn-jsx/5.3.2_acorn@8.8.1:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
     dependencies:
-      acorn: 8.8.0
-    dev: true
-
-  /acorn/8.8.0:
-    resolution: {integrity: sha512-QOxyigPVrpZ2GXT+PFyZTl6TtOFc5egxHIP9IlQ+RbupQuX4RkT/Bee4/kQuC02Xkzg84JcT7oLYtDIQxp+v7w==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
+      acorn: 8.8.1
     dev: true
 
   /acorn/8.8.1:
@@ -1890,8 +1899,8 @@ packages:
     resolution: {integrity: sha512-DQmnRpLj7f6TgN/NYb0MTzJXL+vJF9h3pHy4JhCIs3zwcgez8xmGg3sXHcEO97BrmO2OSvCwMdfdlyl+E9KjOw==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
-      acorn: 8.8.0
-      acorn-jsx: 5.3.2_acorn@8.8.0
+      acorn: 8.8.1
+      acorn-jsx: 5.3.2_acorn@8.8.1
       eslint-visitor-keys: 3.3.0
     dev: true
 
@@ -3066,6 +3075,7 @@ packages:
 
   /sourcemap-codec/1.4.8:
     resolution: {integrity: sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==}
+    deprecated: Please use @jridgewell/sourcemap-codec instead
 
   /string-argv/0.3.1:
     resolution: {integrity: sha512-a1uQGz7IyVy9YwhqjZIZu1c8JO8dNIe20xBmSS6qu9kv++k3JGzCVmprbNN5Kn+BgzD5E7YYwg1CcjuJMRNsvg==}

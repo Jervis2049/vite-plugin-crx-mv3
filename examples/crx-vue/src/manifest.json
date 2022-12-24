@@ -8,7 +8,6 @@
     "128": "assets/icons/icon128.png"
   },
   "action": {
-    "default_title": "Hello World",
     "default_popup": "../popup.html"
   },
   "content_scripts": [{
