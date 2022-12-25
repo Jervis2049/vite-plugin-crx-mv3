@@ -12,8 +12,8 @@ declare module '@vue/runtime-core' {
     AForm: typeof import('ant-design-vue/es')['Form']
     AFormItem: typeof import('ant-design-vue/es')['FormItem']
     AInputSearch: typeof import('ant-design-vue/es')['InputSearch']
+    ASpin: typeof import('ant-design-vue/es')['Spin']
     ATree: typeof import('ant-design-vue/es')['Tree']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

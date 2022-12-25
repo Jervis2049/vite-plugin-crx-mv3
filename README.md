@@ -75,13 +75,14 @@ Check out the examples in this repo.
 + crx-vue
 + crx-vue-drawer
 + crx-vue-multi-page
++ crx-vue-antd-newtab
++ crx-vue-antd-bookmarks
 + crx-contentscript-sass-less
 + crx-executescript-function
 + crx-executescript-files
 + crx-insertcss-files
 + crx-devtools
-+ crx-vue-newtab-antd
-+ crx-vue-bookmarks-antd
+
 
 Check out this [GIF](./docs/gif.md) preview.
 

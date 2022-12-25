@@ -160,7 +160,7 @@ importers:
       vite-plugin-crx-mv3: link:../..
       vue-tsc: 0.40.13_typescript@4.8.4
 
-  examples/crx-vue-bookmarks-antd:
+  examples/crx-vue-antd-bookmarks:
     specifiers:
       '@ant-design/icons-vue': ^6.1.0
       '@vitejs/plugin-vue': ^2.3.0
@@ -175,6 +175,29 @@ importers:
       ant-design-vue: 3.2.15_vue@3.2.41
       less: 4.1.3
       vue: 3.2.41
+    devDependencies:
+      '@vitejs/plugin-vue': 2.3.4_vite@3.1.8+vue@3.2.41
+      unplugin-vue-components: 0.22.11_vue@3.2.41
+      vite: 3.1.8_less@4.1.3
+      vite-plugin-crx-mv3: link:../..
+
+  examples/crx-vue-antd-newtab:
+    specifiers:
+      '@ant-design/icons-vue': ^6.1.0
+      '@vitejs/plugin-vue': ^2.3.0
+      ant-design-vue: ^3.2.15
+      less: ^4.1.3
+      unplugin-vue-components: ^0.22.11
+      vite: ^3.0.9
+      vite-plugin-crx-mv3: workspace:*
+      vue: ^3.2.25
+      vue-router: ^4.1.6
+    dependencies:
+      '@ant-design/icons-vue': 6.1.0_vue@3.2.41
+      ant-design-vue: 3.2.15_vue@3.2.41
+      less: 4.1.3
+      vue: 3.2.41
+      vue-router: 4.1.6_vue@3.2.41
     devDependencies:
       '@vitejs/plugin-vue': 2.3.4_vite@3.1.8+vue@3.2.41
       unplugin-vue-components: 0.22.11_vue@3.2.41
@@ -214,29 +237,6 @@ importers:
       vite: 3.1.8
       vite-plugin-crx-mv3: link:../..
       vue-tsc: 0.40.13_typescript@4.8.4
-
-  examples/crx-vue-newtab-antd:
-    specifiers:
-      '@ant-design/icons-vue': ^6.1.0
-      '@vitejs/plugin-vue': ^2.3.0
-      ant-design-vue: ^3.2.15
-      less: ^4.1.3
-      unplugin-vue-components: ^0.22.11
-      vite: ^3.0.9
-      vite-plugin-crx-mv3: workspace:*
-      vue: ^3.2.25
-      vue-router: ^4.1.6
-    dependencies:
-      '@ant-design/icons-vue': 6.1.0_vue@3.2.41
-      ant-design-vue: 3.2.15_vue@3.2.41
-      less: 4.1.3
-      vue: 3.2.41
-      vue-router: 4.1.6_vue@3.2.41
-    devDependencies:
-      '@vitejs/plugin-vue': 2.3.4_vite@3.1.8+vue@3.2.41
-      unplugin-vue-components: 0.22.11_vue@3.2.41
-      vite: 3.1.8_less@4.1.3
-      vite-plugin-crx-mv3: link:../..
 
 packages:
 
