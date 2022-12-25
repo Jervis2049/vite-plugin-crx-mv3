@@ -5,7 +5,7 @@
   "action": {},
   "content_scripts": [{
     "matches": [ "<all_urls>" ],
-    "css": ["content-scripts/content.less", "content-scripts/test.scss"]
+    "css": ["css/content.less", "css/test.scss"]
   }],
   "background": {
     "service_worker": "background.js"

@@ -22,6 +22,24 @@ import {
 } from './background'
 import { emitAsset } from './asset'
 
+export function loadManifest(manifestPath) {
+  const manifestRaw = readFileSync(manifestPath, 'utf8')
+  if (!isJsonString(manifestRaw)) {
+    throw new Error('The manifest.json is not valid.')
+  }
+  const manifestContent = JSON.parse(manifestRaw)
+  if (!manifestContent.name) {
+    throw new Error('The name field of manifest.json is required.')
+  }
+  if (!manifestContent.version) {
+    throw new Error('The version field of manifest.json is required.')
+  }
+  if (!manifestContent.manifest_version) {
+    throw new Error('The manifest_version field of manifest.json is required.')
+  }
+  return manifestContent
+}
+
 export class ManifestProcessor {
   plugins: Plugin[]
   serviceWorkerPath: string | undefined
@@ -37,38 +55,25 @@ export class ManifestProcessor {
   options: ProcessorOptions
 
   constructor(options: ProcessorOptions) {
+    let manifestPath = options.manifestPath
     this.options = options
-    this.srcDir = dirname(options.manifestPath)
+    this.srcDir = dirname(manifestPath)
     this.plugins = options.viteConfig.plugins.filter(
       (p) => p.name !== VITE_PLUGIN_CRX_MV3
     )
-    this.loadManifest()
+    this.originalManifestContent = options.manifestContent
+    this.getPagePath()
 
-    const manifestWatcher = rollup.watch({ input: options.manifestPath })
+    const manifestWatcher = rollup.watch({ input: manifestPath })
     manifestWatcher.on('event', (event) => {
       if (event.code === 'START') {
-        this.loadManifest()
+        this.originalManifestContent = loadManifest(manifestPath)
+        this.getPagePath()
       }
     })
   }
 
-  public async loadManifest() {
-    const manifestRaw = readFileSync(this.options.manifestPath, 'utf8')
-    if (!isJsonString(manifestRaw)) {
-      throw new Error('The manifest.json is not valid.')
-    }
-    this.originalManifestContent = JSON.parse(manifestRaw)
-    if (!this.originalManifestContent.name) {
-      throw new Error('The name field of manifest.json is required.')
-    }
-    if (!this.originalManifestContent.version) {
-      throw new Error('The version field of manifest.json is required.')
-    }
-    if (!this.originalManifestContent.manifest_version) {
-      throw new Error(
-        'The manifest_version field of manifest.json is required.'
-      )
-    }
+  private getPagePath() {
     this.serviceWorkerPath =
       this.originalManifestContent?.background?.service_worker
     if (this.serviceWorkerPath) {
@@ -122,7 +127,6 @@ export class ManifestProcessor {
     let data = '',
       srcDir = this.srcDir
     if (this.serviceWorkerFullPath === id) {
-      data = `var PORT=${this.options.port};`
       data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
     }
     let source = await generageDynamicImportScript(context, this, code)

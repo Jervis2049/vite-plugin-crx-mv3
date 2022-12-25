@@ -3,10 +3,10 @@ import type { Processor } from './manifest'
 import { WebSocketServer } from 'ws'
 import { resolve, dirname, extname, basename } from 'path'
 import { normalizePath, normalizePathResolve, isObject } from './utils'
-import { ManifestProcessor } from './processors/manifest'
+import { loadManifest, ManifestProcessor } from './processors/manifest'
 import { httpServerStart } from './http'
 import { VITE_PLUGIN_CRX_MV3, UPDATE_CONTENT } from './constants'
-
+import type { ChromeExtensionManifest } from './manifest'
 interface Options {
   port?: number
   manifest: string
@@ -80,8 +80,17 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     }
   }
 
-  async function websocketServerStart(config: ResolvedConfig) {
-    if (config.mode === 'production') return
+  async function websocketServerStart(
+    config: ResolvedConfig,
+    manifestContent: ChromeExtensionManifest
+  ) {
+    if (
+      config.mode === 'production' ||
+      (!manifestContent?.background?.service_worker &&
+        !manifestContent.content_scripts)
+    ) {
+      return
+    }
     const serverOptions = await httpServerStart(port)
     const server = serverOptions.server
     port = serverOptions.port
@@ -99,10 +108,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       socket = ws
     })
     server.on('upgrade', function upgrade(request, socket, head) {
-      if (
-        request.url === '/crx' &&
-        request.rawHeaders.includes(`localhost:${port}`)
-      ) {
+      if (request.url === `/${manifestContent.name}/crx`) {
         wss.handleUpgrade(request, socket, head, function done(ws) {
           wss.emit('connection', ws, request)
         })
@@ -116,12 +122,16 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     name: VITE_PLUGIN_CRX_MV3,
     apply: 'build',
     async configResolved(config: ResolvedConfig) {
-      // Open socket service
-      await websocketServerStart(config)
       manifestPath = normalizePathResolve(config.root, manifest)
+
+      const manifestContent: ChromeExtensionManifest =
+        loadManifest(manifestPath)
+      // Open socket service
+      await websocketServerStart(config, manifestContent)
       manifestProcessor = new ManifestProcessor({
         port,
         manifestPath,
+        manifestContent,
         viteConfig: config
       })
 
@@ -156,8 +166,12 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     },
     writeBundle() {
       if (socket) {
+        const assetPaths = manifestProcessor.assetPaths.map((path) => {
+          return normalizePathResolve(srcDir, path)
+        })
         if (
           manifestProcessor.contentScriptPaths.includes(changedFilePath) ||
+          assetPaths.includes(changedFilePath) ||
           changedFilePath === manifestProcessor.serviceWorkerFullPath ||
           changedFilePath === manifestPath
         ) {

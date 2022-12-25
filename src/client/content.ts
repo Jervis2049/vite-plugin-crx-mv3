@@ -1,6 +1,6 @@
 import { UPDATE_CONTENT, RELOAD, VITE_PLUGIN_CRX_MV3 } from '../constants'
 
-const ws = new WebSocket(`ws://localhost:${PORT}/crx`)
+const ws = new WebSocket(`ws://localhost:${PORT}/${MENIFEST_NAME}/crx`)
 let timer
 
 ws.onopen = function () {

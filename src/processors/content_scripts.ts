@@ -89,9 +89,12 @@ export async function generateScriptForDev(
   manifestContext
 ): Promise<Record<string, any>> {
   let { viteConfig, port } = manifestContext.options
-  if (viteConfig.mode === 'production') return manifestContext.manifestContent
-  let code = `var PORT=${port};`
-  if (!manifestContext.serviceWorkerPath) {
+  let manifestContent = manifestContext.manifestContent
+  let serviceWorkerPath = manifestContext.serviceWorkerPath
+  let contentScripts = manifestContent?.content_scripts
+
+  if (viteConfig.mode === 'production') return manifestContent
+  if (!serviceWorkerPath && contentScripts?.length) {
     let content = readFileSync(
       resolve(__dirname, 'client/background.js'),
       'utf8'
@@ -101,26 +104,29 @@ export async function generateScriptForDev(
     }
     context.emitFile({
       type: 'asset',
-      source: code + content,
+      source: content,
       fileName: SERVICE_WORK_DEV_PATH
     })
   }
-
   if (!manifestContext.manifestContent.content_scripts) {
     manifestContext.manifestContent.content_scripts = []
   }
-  let content = readFileSync(resolve(__dirname, 'client/content.js'), 'utf8')
-  context.emitFile({
-    type: 'asset',
-    source: code + content,
-    fileName: CONTENT_SCRIPT_DEV_PATH
-  })
-  manifestContext.manifestContent.content_scripts = [
-    ...manifestContext.manifestContent.content_scripts,
-    {
-      matches: ['<all_urls>'],
-      js: [CONTENT_SCRIPT_DEV_PATH]
-    }
-  ]
+  if (serviceWorkerPath || contentScripts?.length) {
+    let code = `var PORT=${port},MENIFEST_NAME='${manifestContent.name}';`
+    let content = readFileSync(resolve(__dirname, 'client/content.js'), 'utf8')
+    context.emitFile({
+      type: 'asset',
+      source: code + content,
+      fileName: CONTENT_SCRIPT_DEV_PATH
+    })
+    manifestContext.manifestContent.content_scripts = [
+      ...manifestContext.manifestContent.content_scripts,
+      {
+        matches: ['<all_urls>'],
+        js: [CONTENT_SCRIPT_DEV_PATH]
+      }
+    ]
+  }
+
   return manifestContext.manifestContent
 }

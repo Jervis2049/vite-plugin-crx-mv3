@@ -426,6 +426,7 @@ export interface ProcessorOptions {
   manifestPath: string
   port: number
   viteConfig: ResolvedConfig
+  manifestContent: Partial<ChromeExtensionManifest>
 }
 
 export interface Processor {
