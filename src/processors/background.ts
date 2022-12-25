@@ -7,7 +7,7 @@ import { resolve } from 'path'
 const require = createRequire(import.meta.url)
 
 const dynamicImportAssetRex =
-  /(?<=chrome.scripting.insertCSS\()[\s\S]*?(?=\))/gm
+  /(?<=chrome.scripting.(insertCSS|removeCSS)\()[\s\S]*?(?=\))/gm
 const dynamicImportScriptRex =
   /(?<=chrome.scripting.executeScript\()[\s\S]*?(?=\))/gm
 
@@ -42,11 +42,14 @@ export async function generageDynamicImportAsset(
   srcDir: string,
   code: string
 ): Promise<string> {
-  return code.replace(dynamicImportAssetRex, (match) =>
+  let filePath = ''
+  let content = code.replace(dynamicImportAssetRex, (match) =>
     match.replace(/(?<=(files:\[)?)["|'][\s\S]*?["|'](?=\]?)/gm, (fileStr) => {
-      const filePath = fileStr.replace(/"|'/g, '').trim()
-      emitAsset(context, srcDir, filePath)
+      filePath = fileStr.replace(/"|'/g, '').trim()
       return `"${normalizeCssFilename(filePath)}"`
     })
   )
+  emitAsset(context, srcDir, filePath)
+
+  return content
 }
