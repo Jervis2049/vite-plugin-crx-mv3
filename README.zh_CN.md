@@ -81,7 +81,6 @@ npm run build
 + crx-executescript-function
 + crx-executescript-files
 + crx-insertcss-files
-+ crx-vue-newtab-AntdUI
 + crx-devtools
 
 查看这个[GIF](./docs/gif.md)预览效果。

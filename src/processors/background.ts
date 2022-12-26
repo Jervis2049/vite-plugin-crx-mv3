@@ -49,7 +49,9 @@ export async function generageDynamicImportAsset(
       return `"${normalizeCssFilename(filePath)}"`
     })
   )
-  emitAsset(context, srcDir, filePath)
+  if (filePath) {
+    emitAsset(context, srcDir, filePath)
+  }
 
   return content
 }

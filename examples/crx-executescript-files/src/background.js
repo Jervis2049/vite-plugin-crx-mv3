@@ -1,9 +1,8 @@
-
-chrome.action.onClicked.addListener((tab) => {    
-  if(!tab.url.includes("chrome://")) {
+chrome.action.onClicked.addListener((tab) => {
+  if (!tab.url.includes('chrome://')) {
     chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      files: ["content-scripts/dynamicScript.js"]
-    });
+      files: ['dynamicScript.js']
+    })
   }
-});
+})

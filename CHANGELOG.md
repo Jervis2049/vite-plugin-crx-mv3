@@ -1,4 +1,8 @@
-## 0.0.4 (2022-12-28)
+## 0.0.5 (2022-12-26)
++ fix: Page does not reload after modifying content_scripts's sass/less.
++ fix: Cannot remove dynamically injected CSS.
+
+## 0.0.4 (2022-12-23)
 + feat: Support devtools_page configuration in manifest.json. 
 + fix: The content_scripts path is no longer restricted.
 + fix: Set `apply` to `build`.

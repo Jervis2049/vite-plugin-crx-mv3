@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-crx-mv3",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Build a Chrome Extension with Vite.",
   "main": "dist/index.js",
   "scripts": {

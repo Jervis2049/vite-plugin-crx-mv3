@@ -23,8 +23,5 @@
     "matches": ["<all_urls>"],
     "resources": ["assets/*"]
   }],
-  "permissions": [
-    "activeTab"  
-  ],
   "manifest_version": 3
 }
