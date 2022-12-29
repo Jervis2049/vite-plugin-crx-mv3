@@ -139,7 +139,10 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         manifestProcessor.defaultPopupPath,
         manifestProcessor.optionsPagePath,
         manifestProcessor.devtoolsPagePath,
-        manifestProcessor.serviceWorkerPath
+        manifestProcessor.serviceWorkerPath,
+        manifestProcessor.overridePagePath,
+        manifestProcessor.historyPagePath,
+        manifestProcessor.bookmarksPagePath,
       ]
         .filter((x) => !!x)
         .map((path) => resolve(srcDir, path!))

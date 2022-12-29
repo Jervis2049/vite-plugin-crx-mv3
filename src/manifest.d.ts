@@ -437,6 +437,9 @@ export interface Processor {
   defaultPopupPath?: string | undefined
   optionsPagePath?: string | undefined
   devtoolsPagePath?: string | undefined
+  overridePagePath?: string | undefined
+  historyPagePath?: string | undefined
+  bookmarksPagePath?: string | undefined
   assetPaths: string[]
   contentScriptPaths: string[]
   srcDir: string

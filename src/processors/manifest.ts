@@ -47,6 +47,9 @@ export class ManifestProcessor {
   defaultPopupPath: string | undefined
   optionsPagePath: string | undefined
   devtoolsPagePath: string | undefined
+  overridePagePath: string | undefined
+  historyPagePath: string | undefined
+  bookmarksPagePath: string | undefined
   assetPaths: string[] = [] // css & icons
   contentScriptPaths: string[] = []
   srcDir: string
@@ -74,17 +77,23 @@ export class ManifestProcessor {
   }
 
   private getPagePath() {
-    this.serviceWorkerPath =
-      this.originalManifestContent?.background?.service_worker
+    const originalManifestContent = this.originalManifestContent
+    this.serviceWorkerPath = originalManifestContent?.background?.service_worker
     if (this.serviceWorkerPath) {
       this.serviceWorkerFullPath = normalizePathResolve(
         this.srcDir,
         this.serviceWorkerPath
       )
     }
-    this.defaultPopupPath = this.originalManifestContent?.action?.default_popup
-    this.optionsPagePath = this.originalManifestContent.options_page
-    this.devtoolsPagePath = this.originalManifestContent.devtools_page
+    this.defaultPopupPath = originalManifestContent?.action?.default_popup
+    this.optionsPagePath = originalManifestContent.options_page || originalManifestContent?.options_ui?.page
+    this.devtoolsPagePath = originalManifestContent.devtools_page
+    const chrome_url_overrides = originalManifestContent.chrome_url_overrides
+    if (chrome_url_overrides) {
+      this.overridePagePath = chrome_url_overrides?.newtab
+      this.bookmarksPagePath = chrome_url_overrides?.bookmarks
+      this.historyPagePath = chrome_url_overrides?.history
+    }
   }
 
   //generate manifest.json
@@ -100,11 +109,25 @@ export class ManifestProcessor {
     if (this.defaultPopupPath) {
       manifestContent.action.default_popup = basename(this.defaultPopupPath)
     }
-    if (this.optionsPagePath) {
-      manifestContent.options_page = basename(this.optionsPagePath)
-    }
     if (this.devtoolsPagePath) {
       manifestContent.devtools_page = basename(this.devtoolsPagePath)
+    }
+    if (manifestContent.options_page && this.optionsPagePath) {
+      manifestContent.options_page = basename(this.optionsPagePath)
+    }
+    if (manifestContent?.options_ui?.page && this.optionsPagePath) {
+      manifestContent.options_ui.page = basename(this.optionsPagePath)
+    }
+    if (manifestContent.chrome_url_overrides) {
+      if (this.overridePagePath) {
+        manifestContent.chrome_url_overrides.newtab = basename(this.overridePagePath)
+      }
+      if (this.historyPagePath) {
+        manifestContent.chrome_url_overrides.history = basename(this.historyPagePath)
+      }
+      if (this.bookmarksPagePath) {
+        manifestContent.chrome_url_overrides.bookmarks = basename(this.bookmarksPagePath)
+      }
     }
     if (Array.isArray(manifestContent.content_scripts)) {
       manifestContent.content_scripts.forEach((item: ContentScript) => {
