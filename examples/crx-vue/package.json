@@ -13,6 +13,7 @@
     "typescript": "^4.5.4",
     "vite": "^3.0.9",
     "vue-tsc": "^0.40.13",
+    "less": "^4.1.3",
     "vite-plugin-crx-mv3": "workspace:*"
   },
   "license": "ISC"
