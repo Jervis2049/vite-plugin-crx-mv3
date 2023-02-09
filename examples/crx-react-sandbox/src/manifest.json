@@ -1,0 +1,13 @@
+{
+  "name": "crx-react-sandbox",
+  "description": "A Chrome extension demo.",
+  "version": "1.0.0",
+  "icons": {},
+  "action": {
+    "default_popup": "../popup.html"
+  },
+  "sandbox":{
+    "pages": ["../sandbox.html"]
+  },
+  "manifest_version": 3
+}

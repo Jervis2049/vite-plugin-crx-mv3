@@ -1,46 +1,53 @@
 <template>
   <div class="bookmark-container">
-      <a-form>
-        <a-form-item label="Search Bookmarks">
-          <a-input-search v-model:value="searchValue"
-                          placeholder="input search text"
-                          style="width: 300px"
-                          @search="onSearch" />
-        </a-form-item>
-      </a-form>
-      <a-tree v-model:expandedKeys="expandedKeys"
-              :auto-expand-parent="autoExpandParent"
-              :tree-data="treeData"
-              :fieldNames="fieldNames"
-              @expand="onExpand">
-        <template #title="{ title, url,id }">
-          <div class="bookmark-text">
-            <span v-if="title.indexOf(searchValue) > -1"
-                  :title="title"
-                  class="bookmark-text-link"
-                  @click="linkTo(url)">
-              {{ title.substr(0, title.indexOf(searchValue)) }}
-              <span style="color: #f50">{{ searchValue }}</span>
-              {{ title.substr(title.indexOf(searchValue) + searchValue.length) }}
-            </span>
-            <span v-else
-                  class="bookmark-text-link"
-                  :title="title"
-                  @click="linkTo(url)">{{ title }}</span>
-            <div class="bookmark-text-btns"
-                 v-if="url">
-              <a-button type="link"
-                        size="small"
-                        @click="handleEdit(id,title)">edit</a-button>
-              <a-divider type="vertical" />
-              <a-button danger
-                        type="link"
-                        size="small"
-                        @click="handleDelete(id)">delete</a-button>
-            </div>
+    <a-form>
+      <a-form-item label="Search Bookmarks">
+        <a-input-search
+          v-model:value="searchValue"
+          placeholder="input search text"
+          style="width: 300px"
+          @search="onSearch"
+        />
+      </a-form-item>
+    </a-form>
+    <a-tree
+      v-model:expandedKeys="expandedKeys"
+      :auto-expand-parent="autoExpandParent"
+      :tree-data="treeData"
+      :fieldNames="fieldNames"
+      @expand="onExpand"
+    >
+      <template #title="{ title, url, id }">
+        <div class="bookmark-text">
+          <span
+            v-if="title.indexOf(searchValue) > -1"
+            :title="title"
+            class="bookmark-text-link"
+            @click="linkTo(url)"
+          >
+            {{ title.substr(0, title.indexOf(searchValue)) }}
+            <span style="color: #f50">{{ searchValue }}</span>
+            {{ title.substr(title.indexOf(searchValue) + searchValue.length) }}
+          </span>
+          <span
+            v-else
+            class="bookmark-text-link"
+            :title="title"
+            @click="linkTo(url)"
+            >{{ title }}</span
+          >
+          <div class="bookmark-text-btns" v-if="url">
+            <a-button type="link" size="small" @click="handleEdit(id, title)"
+              >edit</a-button
+            >
+            <a-divider type="vertical" />
+            <a-button danger type="link" size="small" @click="handleDelete(id)"
+              >delete</a-button
+            >
           </div>
-        </template>
-      </a-tree>
+        </div>
+      </template>
+    </a-tree>
   </div>
 </template>
 
@@ -51,48 +58,52 @@ import 'ant-design-vue/es/modal/style/css'
 
 const searchValue = ref('')
 const bookmarkText = ref('')
-const autoExpandParent = ref(true);
+const autoExpandParent = ref(true)
 const expandedKeys = ref([])
 const treeData = ref([])
-const fieldNames = ref({ children: 'children', title: 'title', key: 'dateAdded' })
+const fieldNames = ref({
+  children: 'children',
+  title: 'title',
+  key: 'dateAdded'
+})
 
-const dataList = [];
+const dataList = []
 const generateList = (data) => {
   for (let i = 0; i < data.length; i++) {
-    const node = data[i];
+    const node = data[i]
     dataList.push({
       key: node.dateAdded,
-      title: node.title,
-    });
+      title: node.title
+    })
     if (node.children) {
-      generateList(node.children);
+      generateList(node.children)
     }
   }
-};
+}
 
 const getParentKey = (key, tree) => {
-  let parentKey;
+  let parentKey
   for (let i = 0; i < tree.length; i++) {
-    const node = tree[i];
+    const node = tree[i]
     if (node.children) {
-      if (node.children.some(item => item.dateAdded === key)) {
-        parentKey = node.dateAdded;
+      if (node.children.some((item) => item.dateAdded === key)) {
+        parentKey = node.dateAdded
       } else if (getParentKey(key, node.children)) {
-        parentKey = getParentKey(key, node.children);
+        parentKey = getParentKey(key, node.children)
       }
     }
   }
-  return parentKey;
-};
-
-function onExpand (keys) {
-  expandedKeys.value = keys;
-  autoExpandParent.value = false;
+  return parentKey
 }
 
-function getBookmarkTree () {
+function onExpand(keys) {
+  expandedKeys.value = keys
+  autoExpandParent.value = false
+}
+
+function getBookmarkTree() {
   chrome.bookmarks.getTree(function (bookmarkTreeNodes) {
-    console.log('bookmarkTreeNodes', bookmarkTreeNodes);
+    console.log('bookmarkTreeNodes', bookmarkTreeNodes)
     if (bookmarkTreeNodes.length) {
       treeData.value = bookmarkTreeNodes[0].children.map((item, index) => {
         return {
@@ -100,65 +111,65 @@ function getBookmarkTree () {
           dateAdded: item.dateAdded + index
         }
       })
-      generateList(treeData.value);
+      generateList(treeData.value)
     }
-  });
+  })
 }
 
-function onSearch (value) {
-  const expanded = dataList.map(item => {
-    if (item.title.indexOf(value) > -1) {
-      return getParentKey(item.key, treeData.value);
-    }
-    return null;
-  }).filter((item, i, self) => item && self.indexOf(item) === i);
-  expandedKeys.value = expanded;
-  searchValue.value = value;
-  autoExpandParent.value = true;
+function onSearch(value) {
+  const expanded = dataList
+    .map((item) => {
+      if (item.title.indexOf(value) > -1) {
+        return getParentKey(item.key, treeData.value)
+      }
+      return null
+    })
+    .filter((item, i, self) => item && self.indexOf(item) === i)
+  expandedKeys.value = expanded
+  searchValue.value = value
+  autoExpandParent.value = true
 }
 
-function linkTo (url) {
+function linkTo(url) {
   if (url) {
-    chrome.tabs.create({ url });
+    chrome.tabs.create({ url })
   }
 }
 
-function handleEdit (id, title) {
+function handleEdit(id, title) {
   if (id) {
     bookmarkText.value = title
     Modal.confirm({
-      title: "update bookmark",
+      title: 'update bookmark',
       content: createVNode(Input, {
         defaultValue: bookmarkText.value,
         onChange: (e) => {
-          bookmarkText.value = e.target.value;
-        },
+          bookmarkText.value = e.target.value
+        }
       }),
-      onOk () {
+      onOk() {
         chrome.bookmarks.update(id, {
           title: bookmarkText.value
-        });
+        })
         getBookmarkTree()
-      },
-    });
+      }
+    })
   }
 }
-function handleDelete (id) {
+function handleDelete(id) {
   if (id) {
     Modal.confirm({
       title: 'Are you sure to delete the bookmark?',
-      onOk () {
+      onOk() {
         chrome.bookmarks.remove(id)
         getBookmarkTree()
-      },
-    });
+      }
+    })
   }
 }
 document.addEventListener('DOMContentLoaded', function () {
-  getBookmarkTree();
-});
-
-
+  getBookmarkTree()
+})
 </script>
 
 <style lang="less" scoped>

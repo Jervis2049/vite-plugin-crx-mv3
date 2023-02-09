@@ -8,7 +8,7 @@
     "128": "assets/icons/icon128.png"
   },
   "action": {
-    "default_title": "Hello World",
+    "default_title": "crx-vue-multi-page",
     "default_popup": "../popup.html"
   },
   "options_page": "../options.html",

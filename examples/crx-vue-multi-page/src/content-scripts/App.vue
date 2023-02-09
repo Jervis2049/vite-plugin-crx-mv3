@@ -12,7 +12,7 @@ function handleClick() {
 .button {
   width: 200px;
   height: 80px;
-  background: url(./assets/click-here.png) no-repeat;
+  background: url(../assets/click-here.png) no-repeat;
   background-size: 100% 100%;
   position: fixed;
   top: 50%;

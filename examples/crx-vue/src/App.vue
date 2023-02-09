@@ -4,3 +4,8 @@
   </div>
 </template>
 
+<style lang="less">
+.container {
+  background: #ff0;
+}
+</style>
