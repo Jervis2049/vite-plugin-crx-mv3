@@ -1,5 +1,5 @@
 {
-  "name": "crx-vue-antd-bookmarks",
+  "name": "crx-vue-antd-newtab",
   "version": "0.0.1",
   "scripts": {
     "web:dev": "vite",

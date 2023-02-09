@@ -5,8 +5,9 @@ import { resolve, dirname, extname, basename } from 'path'
 import { normalizePath, normalizePathResolve, isObject } from './utils'
 import { loadManifest, ManifestProcessor } from './processors/manifest'
 import { httpServerStart } from './http'
-import { VITE_PLUGIN_CRX_MV3, UPDATE_CONTENT } from './constants'
+import { VITE_PLUGIN_CRX_MV3, UPDATE_CONTENT, stubId } from './constants'
 import type { ChromeExtensionManifest } from './manifest'
+
 interface Options {
   port?: number
   manifest: string
@@ -26,68 +27,17 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
   }
 
   let socket
-  let changedFilePath: string
-  let manifestPath: string
+  let changedFilePath = ''
+  let manifestAbsolutPath: string
   let manifestProcessor: Processor
   let srcDir = dirname(manifest)
+  let config: ResolvedConfig
 
-  function setRollupInput(config: ResolvedConfig, entries: string[]) {
-    let buildInput = config.build.rollupOptions?.input
-    if (Array.isArray(buildInput)) {
-      config.build.rollupOptions.input = [...buildInput, ...entries]
-    } else if (isObject(buildInput)) {
-      const entryObj = {}
-      entries.forEach((item) => {
-        const name = basename(item, extname(item))
-        entryObj[name] = resolve(srcDir, item)
-      })
-      config.build.rollupOptions.input = {
-        ...buildInput,
-        ...entryObj
-      }
-    } else {
-      config.build.rollupOptions.input = [
-        ...(buildInput && typeof buildInput === 'string' ? [buildInput] : []),
-        ...entries
-      ]
-    }
-  }
-
-  function handleBuildPath(config: ResolvedConfig) {
-    if (!config.build.rollupOptions.output) {
-      config.build.rollupOptions.output = {}
-    }
-    const entryFileNames = config.build.rollupOptions.output.entryFileNames
-    config.build.rollupOptions.output.entryFileNames = (assetInfo) => {
-      if (
-        assetInfo.facadeModuleId &&
-        /.(j|t)s$/.test(assetInfo.facadeModuleId)
-      ) {
-        const assetPath = dirname(assetInfo.facadeModuleId).replace(
-          normalizePath(resolve(srcDir)),
-          ''
-        )
-        return `${assetPath ? assetPath.slice(1) + '/' : ''}[name].js`
-      }
-      if (entryFileNames) {
-        if (typeof entryFileNames == 'string') {
-          return entryFileNames
-        } else if (typeof entryFileNames == 'function') {
-          return entryFileNames(assetInfo)
-        }
-      }
-      return 'assets/[name]-[hash].js'
-    }
-  }
-
-  async function websocketServerStart(
-    config: ResolvedConfig,
-    manifestContent: ChromeExtensionManifest
-  ) {
+  async function websocketServerStart(manifest: ChromeExtensionManifest) {
     if (
       config.mode === 'production' ||
-      (!manifestContent?.background?.service_worker &&
-        !manifestContent.content_scripts)
+      (!manifest?.background?.service_worker &&
+        !manifest?.content_scripts?.length)
     ) {
       return
     }
@@ -96,19 +46,19 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     port = serverOptions.port
     const wss = new WebSocketServer({ noServer: true })
     wss.on('connection', function connection(ws) {
-      console.log(`\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client connected.`)
+      console.log(`\x1B[32m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client connected.`)
       ws.on('message', () => {
         ws.send('keep websocket alive.')
       })
       ws.on('close', () => {
         console.log(
-          `\x1B[33m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client disconnected.`
+          `\x1B[32m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client disconnected.`
         )
       })
       socket = ws
     })
     server.on('upgrade', function upgrade(request, socket, head) {
-      if (request.url === `/${manifestContent.name}/crx`) {
+      if (request.url === `/${manifest.name}/crx`) {
         wss.handleUpgrade(request, socket, head, function done(ws) {
           wss.emit('connection', ws, request)
         })
@@ -121,51 +71,75 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
   return {
     name: VITE_PLUGIN_CRX_MV3,
     apply: 'build',
-    async configResolved(config: ResolvedConfig) {
-      manifestPath = normalizePathResolve(config.root, manifest)
+    async configResolved(_config: ResolvedConfig) {
+      config = _config
+      manifestAbsolutPath = normalizePathResolve(config.root, manifest)
+      let manifestContent: ChromeExtensionManifest =
+        loadManifest(manifestAbsolutPath)
+      // websocket service
+      await websocketServerStart(manifestContent)
 
-      const manifestContent: ChromeExtensionManifest =
-        loadManifest(manifestPath)
-      // Open socket service
-      await websocketServerStart(config, manifestContent)
       manifestProcessor = new ManifestProcessor({
         port,
-        manifestPath,
-        manifestContent,
+        srcDir,
+        manifest: manifestContent,
         viteConfig: config
       })
+    },
+    options({ input, ...options }) {
+      manifestProcessor.reloadManifest(manifestAbsolutPath)
+      let htmlPaths = manifestProcessor.getHtmlPaths()
+      let finalInput = input
+      let buildInput = config.build.rollupOptions.input
 
-      const entries = [
-        manifestProcessor.defaultPopupPath,
-        manifestProcessor.optionsPagePath,
-        manifestProcessor.devtoolsPagePath,
-        manifestProcessor.serviceWorkerPath,
-        manifestProcessor.overridePagePath,
-        manifestProcessor.historyPagePath,
-        manifestProcessor.bookmarksPagePath,
-      ]
-        .filter((x) => !!x)
-        .map((path) => resolve(srcDir, path!))
+      if (!buildInput && !htmlPaths.length) {
+        finalInput = stubId
+      } else {
+        if (Array.isArray(buildInput)) {
+          finalInput = [...buildInput, ...htmlPaths]
+        } else if (isObject(buildInput)) {
+          const entryObj = {}
+          for (const item of htmlPaths) {
+            const name = basename(item, extname(item))
+            entryObj[name] = resolve(srcDir, item)
+          }
+          finalInput = { ...buildInput, ...entryObj }
+        } else {
+          finalInput = [
+            buildInput && typeof buildInput === 'string' ? buildInput: stubId,
+            ...htmlPaths
+          ]
+        }
+      }
 
-      // input
-      setRollupInput(config, entries)
-      // Rewrite output.entryFileNames to modify build path of assets.
-      handleBuildPath(config)
+      return { input: finalInput, ...options }
     },
     watchChange(id) {
       changedFilePath = normalizePath(id)
       console.log(`\x1B[35mFile change detected :\x1B[0m ${changedFilePath}`)
     },
     async buildStart() {
-      await manifestProcessor.getAssetPaths()
-      await manifestProcessor.generateBundle(this)
-      await manifestProcessor.generateAssets(this)
-    },
-    transform(code, id) {
-      return manifestProcessor.transform(code, id, this)
-    },
-    generateBundle() {
+      this.addWatchFile(manifestAbsolutPath)
+      await manifestProcessor.generateServiceWorkScript(this)
+      await manifestProcessor.generateAsset(this)
+      await manifestProcessor.generateContentScript(this)
       manifestProcessor.generateManifest(this)
+    },
+    resolveId(source) {
+      if (source === stubId) return stubId
+      return null
+    },
+    load(id) {
+      if (id === stubId) return `console.log('stub')`
+      return null
+    },
+    generateBundle(options, bundle) {
+      for (const [key, chunk] of Object.entries(bundle)) {
+        if (chunk.type === 'chunk' && chunk.facadeModuleId === stubId) {
+          delete bundle[key]
+          break
+        }
+      }
     },
     writeBundle() {
       if (socket) {
@@ -175,8 +149,8 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         if (
           manifestProcessor.contentScriptPaths.includes(changedFilePath) ||
           assetPaths.includes(changedFilePath) ||
-          changedFilePath === manifestProcessor.serviceWorkerFullPath ||
-          changedFilePath === manifestPath
+          changedFilePath === manifestProcessor.serviceWorkerAbsolutePath ||
+          changedFilePath === manifestAbsolutPath
         ) {
           socket.send(UPDATE_CONTENT)
         }

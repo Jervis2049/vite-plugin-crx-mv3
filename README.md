@@ -69,14 +69,14 @@ npm run build
 Check out the examples in this repo.
 
 + crx-basic
-+ crx-react
-+ crx-solid
-+ crx-jquery
 + crx-vue
 + crx-vue-drawer
 + crx-vue-multi-page
 + crx-vue-antd-newtab
 + crx-vue-antd-bookmarks
++ crx-react
++ crx-react-sandbox
++ crx-solid
 + crx-contentscript-sass-less
 + crx-executescript-function
 + crx-executescript-files
@@ -88,5 +88,4 @@ Check out this [GIF](./docs/gif.md) preview.
 
 ## Notes
 + After starting the project, you need to refresh the page manually for the first time, so that the client and the server can establish a websocket connection.
-+ In manifest.json, when the background.service_worker, action.default_popup, options_page, devtools_page configuration is changed, you need to restart the project.
 + The html file needs to be placed outside the src directory.

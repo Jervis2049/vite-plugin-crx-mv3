@@ -270,7 +270,7 @@ export interface ChromeExtensionManifest {
    * Defines an collection of app or extension pages that are to be served in a sandboxed unique origin, and optionally a Content Security Policy to use with them.
    */
   sandbox?: {
-    pages: [Icon, ...Icon[]]
+    pages: string[]
     /**
      * This introduces some fairly strict policies that will make extensions more secure by default, and provides you with the ability to create and enforce rules governing the types of content that can be loaded and executed by your extensions and applications.
      */
@@ -423,31 +423,25 @@ export interface WebAccessibleResource {
 }
 
 export interface ProcessorOptions {
-  manifestPath: string
+  srcDir: string
   port: number
+  manifest: ChromeExtensionManifest,
   viteConfig: ResolvedConfig
-  manifestContent: Partial<ChromeExtensionManifest>
 }
 
 export interface Processor {
   options: ProcessorOptions
   plugins: Plugin[]
-  serviceWorkerPath?: string | undefined
-  serviceWorkerFullPath?: string | undefined
-  defaultPopupPath?: string | undefined
-  optionsPagePath?: string | undefined
-  devtoolsPagePath?: string | undefined
-  overridePagePath?: string | undefined
-  historyPagePath?: string | undefined
-  bookmarksPagePath?: string | undefined
   assetPaths: string[]
   contentScriptPaths: string[]
+  serviceWorkerAbsolutePath: string | undefined
   srcDir: string
-  manifestContent: Partial<ChromeExtensionManifest>
-  originalManifestContent: Partial<ChromeExtensionManifest>
-  getAssetPaths: () => Promise<void>
-  generateBundle: (context) => Promise<void>
-  generateAssets: (context) => Promise<void>
-  transform: (code: string, id: string, context) => Promise<string>
+  manifest: Partial<ChromeExtensionManifest>
+  generateServiceWorkScript: (context) => void
+  getHtmlPaths: ()  => string[]
+  reloadManifest: (path) => void
+  getAssetPaths: () => void
+  generateContentScript: (context) => Promise<void>
+  generateAsset: (context) => Promise<void>
   generateManifest: (context) => void
 }

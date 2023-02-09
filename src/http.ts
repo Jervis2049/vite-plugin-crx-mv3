@@ -20,7 +20,7 @@ export async function httpServerStart(port: number): Promise<HttpServer> {
     }
     server.on('error', onError)
     server.listen(port, () => {
-      console.log('WebSocketServer started at port: ', port)
+      console.log('WebSocket server started on port: ', port)
       server.removeListener('error', onError)
       resolve({ port, server })
     })

@@ -69,23 +69,23 @@ npm run build
 在本仓库下的examples目录下：
 
 + crx-basic
-+ crx-react
-+ crx-solid
-+ crx-jquery
 + crx-vue
 + crx-vue-drawer
 + crx-vue-multi-page
 + crx-vue-antd-newtab
 + crx-vue-antd-bookmarks
++ crx-react
++ crx-react-sandbox
++ crx-solid
 + crx-contentscript-sass-less
 + crx-executescript-function
 + crx-executescript-files
 + crx-insertcss-files
 + crx-devtools
 
+
 查看这个[GIF](./docs/gif.md)预览效果。
 
 ## 注意事项
 + 启动项目后，第一次需要手动刷新页面，这样客户端和服务端便建立了websocket连接。
-+ 在manifest.json中，当background.service_worker, action.default_popup, options_page, devtools_page配置发生变化时，需要重启项目。
 + html文件需要放在src目录外层。

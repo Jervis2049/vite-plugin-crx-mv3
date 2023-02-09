@@ -3,6 +3,7 @@ import { createRequire } from 'module'
 import { normalizeJsFilename, normalizeCssFilename } from '../utils'
 import { emitAsset } from './asset'
 import { resolve } from 'path'
+import { readFileSync } from 'fs'
 
 const require = createRequire(import.meta.url)
 
@@ -11,7 +12,7 @@ const dynamicImportAssetRex =
 const dynamicImportScriptRex =
   /(?<=chrome.scripting.executeScript\()[\s\S]*?(?=\))/gm
 
-export async function generageDynamicImportScript(
+async function generageDynamicImportScript(
   context: PluginContext,
   manifestContext,
   code: string
@@ -25,6 +26,7 @@ export async function generageDynamicImportScript(
       const normalizePath = normalizeJsFilename(filePath)
       context.addWatchFile(fileFullPath)
       rollup({
+        context: 'globalThis',
         input: fileFullPath,
         plugins: manifestContext.plugins
       }).then(async (bundle) => {
@@ -37,9 +39,9 @@ export async function generageDynamicImportScript(
   )
 }
 
-export async function generageDynamicImportAsset(
+async function generageDynamicImportAsset(
   context: PluginContext,
-  srcDir: string,
+  manifestContext,
   code: string
 ): Promise<string> {
   let filePath = ''
@@ -50,8 +52,33 @@ export async function generageDynamicImportAsset(
     })
   )
   if (filePath) {
-    emitAsset(context, srcDir, filePath)
+    emitAsset(context, manifestContext.srcDir, filePath)
   }
 
   return content
+}
+
+export async function emitServiceWorkScript(
+  context: PluginContext,
+  manifestContext,
+) {
+  const { rollup } = await import('rollup')  
+  const bundle = await rollup({
+    input: manifestContext.serviceWorkerAbsolutePath,
+    plugins: manifestContext.plugins
+  })
+  try {
+    const { output } = await bundle.generate({})
+    let code =  output[0].code + readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
+    let source = await generageDynamicImportScript(context, manifestContext, code)
+    source = await generageDynamicImportAsset(context, manifestContext, source)
+    context.emitFile({
+      type: 'asset',
+      source,
+      fileName: output[0].fileName
+    })
+
+  } finally {
+    await bundle.close()
+  }
 }

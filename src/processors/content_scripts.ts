@@ -1,12 +1,14 @@
-import { PluginContext } from 'rollup'
+import { PluginContext, OutputAsset } from 'rollup'
 import { ChunkMetadata } from 'vite'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
 import {
   normalizeJsFilename,
+  normalizeCssFilename,
   relaceCssUrlPrefix,
   relaceResourcePathPrefix,
-  convertIntoIIFE
+  convertIntoIIFE,
+  isString
 } from '../utils'
 import { CONTENT_SCRIPT_DEV_PATH, SERVICE_WORK_DEV_PATH } from '../constants'
 
@@ -17,19 +19,23 @@ declare module 'rollup' {
 }
 
 // generate content_scripts
-export async function generageContentScripts(
+export async function emitContentScripts(
   context: PluginContext,
   manifestContext
 ): Promise<Record<string, any>> {
   const { rollup } = await import('rollup')
   let contentScriptPaths: string[] = []
-  for (const script of manifestContext.manifestContent.content_scripts || []) {
-    for (const js of script.js || []) {
-      const input = resolve(manifestContext.srcDir, js)
+  for (const script of manifestContext.manifest.content_scripts ?? []) {
+    for (const [index, css] of (script.css ?? []).entries()) {
+      script.css[index] = normalizeCssFilename(css)
+    }
+    for (const [index, js] of (script.js ?? []).entries()) {
       const bundle = await rollup({
-        input,
+        context: 'globalThis',
+        input: resolve(manifestContext.srcDir, js),
         plugins: manifestContext.plugins
       })
+      script.js[index] = normalizeJsFilename(js)
       try {
         const { output } = await bundle.generate({
           entryFileNames: normalizeJsFilename(js)
@@ -42,7 +48,9 @@ export async function generageContentScripts(
         ]
 
         bundle.watchFiles.forEach((path) => {
-          context.addWatchFile(path)
+          if(!context.getWatchFiles().includes(path)){
+            context.addWatchFile(path)
+          }
         })
         const outputChunk = output[0]
         if (outputChunk.type === 'chunk') {
@@ -55,19 +63,23 @@ export async function generageContentScripts(
           const assetsSource = output.filter((x) =>
             importedAssets.includes(x.fileName)
           )
+
           if (cssSource.length) {
             script.css = [
               ...(script.css ?? []),
               ...cssSource.map((x) => x.fileName)
             ]
           }
-          [outputChunk, ...cssSource, ...assetsSource].map((x) => {
-            let content = x.code
-              ? convertIntoIIFE(relaceResourcePathPrefix(x.code))
-              : relaceCssUrlPrefix(x.source)
+          context.emitFile({
+            type: 'asset',
+            source: convertIntoIIFE(relaceResourcePathPrefix(outputChunk.code)),
+            fileName: outputChunk.fileName
+          })
+          ;[...cssSource, ...assetsSource].map((x) => {
+            let source = (x as OutputAsset).source
             context.emitFile({
               type: 'asset',
-              source: content,
+              source: isString(source) ? relaceCssUrlPrefix(source):  source,
               fileName: x.fileName
             })
           })
@@ -78,28 +90,28 @@ export async function generageContentScripts(
     }
   }
   return {
-    manifestContent: manifestContext.manifestContent,
+    manifest: manifestContext.manifest,
     contentScriptPaths
   }
 }
 
-// generate scripts for dev
-export async function generateScriptForDev(
+// scripts for dev
+export async function emitDevScript(
   context: PluginContext,
   manifestContext
 ): Promise<Record<string, any>> {
   let { viteConfig, port } = manifestContext.options
-  let manifestContent = manifestContext.manifestContent
-  let serviceWorkerPath = manifestContext.serviceWorkerPath
-  let contentScripts = manifestContent?.content_scripts
+  let manifest = manifestContext.manifest
+  let serviceWorkerPath = manifestContext.serviceWorkerAbsolutePath
+  let contentScripts = manifest?.content_scripts
 
-  if (viteConfig.mode === 'production') return manifestContent
+  if (viteConfig.mode === 'production') return manifest
   if (!serviceWorkerPath && contentScripts?.length) {
     let content = readFileSync(
       resolve(__dirname, 'client/background.js'),
       'utf8'
     )
-    manifestContext.manifestContent.background = {
+    manifest.background = {
       service_worker: SERVICE_WORK_DEV_PATH
     }
     context.emitFile({
@@ -108,19 +120,19 @@ export async function generateScriptForDev(
       fileName: SERVICE_WORK_DEV_PATH
     })
   }
-  if (!manifestContext.manifestContent.content_scripts) {
-    manifestContext.manifestContent.content_scripts = []
+  if (!manifestContext.manifest.content_scripts) {
+    manifest.content_scripts = []
   }
   if (serviceWorkerPath || contentScripts?.length) {
-    let code = `var PORT=${port},MENIFEST_NAME='${manifestContent.name}';`
+    let code = `var PORT=${port},MENIFEST_NAME='${manifest.name}';`
     let content = readFileSync(resolve(__dirname, 'client/content.js'), 'utf8')
     context.emitFile({
       type: 'asset',
       source: code + content,
       fileName: CONTENT_SCRIPT_DEV_PATH
     })
-    manifestContext.manifestContent.content_scripts = [
-      ...manifestContext.manifestContent.content_scripts,
+    manifest.content_scripts = [
+      ...manifest.content_scripts,
       {
         matches: ['<all_urls>'],
         js: [CONTENT_SCRIPT_DEV_PATH]
@@ -128,5 +140,5 @@ export async function generateScriptForDev(
     ]
   }
 
-  return manifestContext.manifestContent
+  return manifest
 }
