@@ -83,8 +83,14 @@ Check out the examples in this repo.
 + crx-insertcss-files
 + crx-devtools
 
+## Preview
+> examples/crx-executescript-function
 
-Check out this [GIF](./docs/gif.md) preview.
+<img src="./docs/change_page_backgroundcolor.gif" width="1000">
+
+> examples/crx-vue-drawer
+
+<img src="./docs/content_script_drawer.gif" width="1000">
 
 ## Notes
 + After starting the project, you need to refresh the page manually for the first time, so that the client and the server can establish a websocket connection.

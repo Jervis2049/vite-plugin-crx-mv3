@@ -25,7 +25,7 @@ yarn add vite-plugin-crx-mv3 -D
 pnpm add vite-plugin-crx-mv3 -D
 ```
 
-### 插件选项
+### 选项
 
 #### port
 
@@ -83,8 +83,16 @@ npm run build
 + crx-insertcss-files
 + crx-devtools
 
+## 预览
 
-查看这个[GIF](./docs/gif.md)预览效果。
+> examples/crx-executescript-function
+
+<img src="./docs/change_page_backgroundcolor.gif" width="1000">
+
+> examples/crx-vue-drawer
+
+<img src="./docs/content_script_drawer.gif" width="1000">
+
 
 ## 注意事项
 + 启动项目后，第一次需要手动刷新页面，这样客户端和服务端便建立了websocket连接。
