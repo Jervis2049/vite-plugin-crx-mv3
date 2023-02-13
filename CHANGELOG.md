@@ -1,6 +1,7 @@
 ## 0.0.6 (2023-2-9)
-+ fix:  Rollup input issue
-+ chore: Overall code optimization
++ refactor(input):  In the options phase of rollup, the html path of the manifest is used as the rollup input.
++ fix: The input configuration of rollup is allowed to be empty.
++ chore: code optimization
 
 ## 0.0.5 (2022-12-26)
 + fix: Page does not reload after modifying content_scripts's sass/less.
