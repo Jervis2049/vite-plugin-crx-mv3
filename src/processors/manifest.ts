@@ -88,7 +88,7 @@ export class ManifestProcessor {
       manifest.options_page = basename(manifest.options_page)
     }
     if (manifest.options_ui?.page) {
-      manifest.options_page = basename(manifest.options_ui?.page)
+      manifest.options_ui.page = basename(manifest.options_ui?.page)
     }
     if(manifest.sandbox?.pages){
       manifest.sandbox.pages = manifest.sandbox.pages.map((page)=>basename(page))
