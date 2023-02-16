@@ -7,10 +7,12 @@
 
 ## Features
 
-+ Chrome extension pages and content scripts supporting the use of vue, react, etc.
-+ Support sass/less in manifest.json.
++ Support Manifest V3.
 + Support Typescript.
-+ In development environments, content_scripts injected pages and Chrome extensions are automatically reloaded after content_scripts and background.service_worker are modified.
++ Support sass/less in manifest.json.
++ Support for multiple frameworks or libraries, such as vue, react, etc.
++ In development mode, Chrome extensions are automatically reloaded after modifying files.
++ Simple configuration and good development experience.
 
 ## Usage
 ### Install

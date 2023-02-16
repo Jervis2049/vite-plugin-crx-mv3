@@ -5,12 +5,14 @@
 
 [English](./README.md) | **简体中文** 
 
-## 功能
+## 特性
 
-+ Chrome扩展页面和内容脚本支持使用vue、react等等；
-+ 支持在manifest.json中配置sass/less；
-+ 支持Typescript；
-+ 在开发环境，修改content_scripts和background.service_worker之后，content_scripts注入的页面和Chrome扩展程序会自动重载；
++ 支持Manifest V3
++ 支持Typescript
++ 支持在manifest.json中配置sass/less
++ 支持多种框架或库，如vue，react等等
++ 在开发模式中，修改文件后Chrome扩展自动重载
++ 配置简单，开发体验好
 
 ## 用法
 
@@ -25,7 +27,7 @@ yarn add vite-plugin-crx-mv3 -D
 pnpm add vite-plugin-crx-mv3 -D
 ```
 
-### 选项
+### 插件选项
 
 #### port
 
