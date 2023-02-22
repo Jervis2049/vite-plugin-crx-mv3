@@ -74,11 +74,11 @@ npm run build
 + crx-vue
 + crx-vue-drawer
 + crx-vue-multi-page
-+ crx-vue-antd-newtab
 + crx-vue-antd-bookmarks
 + crx-react
 + crx-react-sandbox
 + crx-solid
++ crx-newtab
 + crx-contentscript-sass-less
 + crx-executescript-function
 + crx-executescript-files

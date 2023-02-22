@@ -1,0 +1,11 @@
+{
+  "name": "crx-newtab",
+  "description": "A Chrome extension demo.",
+  "version": "1.0.0",
+  "icons": {},
+  "action": {},
+  "chrome_url_overrides" : { 
+    "newtab": "../newtab.html" 
+  },
+  "manifest_version": 3
+}
