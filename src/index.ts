@@ -111,7 +111,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
           ]
         }
       }
-
+      
       return { input: finalInput, ...options }
     },
     watchChange(id) {
@@ -123,6 +123,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       await manifestProcessor.generateServiceWorkScript(this)
       await manifestProcessor.generateAsset(this)
       await manifestProcessor.generateContentScript(this)
+      await manifestProcessor.generateWebAccessibleResources(this)
       manifestProcessor.generateManifest(this)
     },
     resolveId(source) {

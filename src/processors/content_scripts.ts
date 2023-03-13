@@ -23,6 +23,7 @@ export async function emitContentScripts(
   context: PluginContext,
   manifestContext
 ): Promise<Record<string, any>> {
+ 
   const { rollup } = await import('rollup')
   let contentScriptPaths: string[] = []
   for (const script of manifestContext.manifest.content_scripts ?? []) {
@@ -33,7 +34,7 @@ export async function emitContentScripts(
       const bundle = await rollup({
         context: 'globalThis',
         input: resolve(manifestContext.srcDir, js),
-        plugins: manifestContext.plugins
+        plugins: manifestContext.plugins,
       })
       script.js[index] = normalizeJsFilename(js)
       try {
@@ -47,9 +48,9 @@ export async function emitContentScripts(
           ...bundle.watchFiles.filter((p) => !p.includes('node_modules'))
         ]
 
-        bundle.watchFiles.forEach((path) => {
-          if(!context.getWatchFiles().includes(path)){
-            context.addWatchFile(path)
+        bundle.watchFiles.forEach((p) => {
+          if(!context.getWatchFiles().includes(p)){
+            context.addWatchFile(p)
           }
         })
         const outputChunk = output[0]

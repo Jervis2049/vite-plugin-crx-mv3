@@ -443,5 +443,6 @@ export interface Processor {
   getAssetPaths: () => void
   generateContentScript: (context) => Promise<void>
   generateAsset: (context) => Promise<void>
-  generateManifest: (context) => void
+  generateManifest: (context) => void,
+  generateWebAccessibleResources: (context) => void,
 }

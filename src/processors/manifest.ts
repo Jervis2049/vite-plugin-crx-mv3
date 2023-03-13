@@ -16,6 +16,7 @@ import {
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
 import { emitContentScripts, emitDevScript } from './content_scripts'
+import { emitWebAccessibleResources } from './web_accessible_resources'
 import { emitServiceWorkScript } from './background'
 import { emitAsset } from './asset'
 
@@ -130,6 +131,12 @@ export class ManifestProcessor {
     this.contentScriptPaths = contentScriptPaths
     this.manifest = manifest
     this.manifest = await emitDevScript(context, this)
+  }
+
+  public async generateWebAccessibleResources(context: PluginContext) {
+    const { resourcePaths, manifest } = await emitWebAccessibleResources(context, this)
+    this.contentScriptPaths = [...this.contentScriptPaths, ...resourcePaths]
+    this.manifest = manifest
   }
 
   public getAssetPaths() {
