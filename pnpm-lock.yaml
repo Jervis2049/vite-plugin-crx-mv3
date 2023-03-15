@@ -237,6 +237,14 @@ importers:
       vite-plugin-crx-mv3: link:../..
       vue-tsc: 0.40.13_typescript@4.8.4
 
+  examples/crx-webAccessibleResources:
+    specifiers:
+      vite: ^3.0.9
+      vite-plugin-crx-mv3: workspace:*
+    devDependencies:
+      vite: registry.npmmirror.com/vite/3.1.8
+      vite-plugin-crx-mv3: link:../..
+
 packages:
 
   /@ampproject/remapping/2.2.0:

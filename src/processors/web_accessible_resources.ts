@@ -12,7 +12,8 @@ export async function emitWebAccessibleResources(
   
   for (const item of manifestContext.manifest.web_accessible_resources ?? []) {
     for (const [index, path] of (item.resources ?? []).entries()) {
-      if (path.includes('*')) break
+      if (path.includes('*')) continue
+      if (path.endsWith('.html')) continue
       if (/\.(js|ts)$/.test(path)) {
         const bundle = await rollup({
           context: 'globalThis',
@@ -46,7 +47,7 @@ export async function emitWebAccessibleResources(
           await bundle.close()
         }
       } else {
-        if(!manifestContext.assetPaths.includes(path)){
+        if(!manifestContext.assetPaths.includes(path)){     
           emitAsset(context, manifestContext.srcDir, path)
           item.resources[index] = normalizeCssFilename(path)
         }
