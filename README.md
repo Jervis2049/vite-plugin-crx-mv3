@@ -84,6 +84,7 @@ Check out the examples in this repo.
 + crx-executescript-files
 + crx-insertcss-files
 + crx-devtools
++ crx-webAccessibleResources
 
 ## Preview
 > examples/crx-executescript-function

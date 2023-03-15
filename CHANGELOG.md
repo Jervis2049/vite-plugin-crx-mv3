@@ -1,3 +1,6 @@
+## 0.0.7 (2023-3-15)
++ feat: support for js, css compilation in web_accessible_resources [#5](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/5)
+
 ## 0.0.6 (2023-2-9)
 + refactor(input):  In the options phase of rollup, the html path of the manifest is used as the rollup input.
 + fix: The input configuration of rollup is allowed to be empty.
@@ -27,8 +30,8 @@
 ## 0.0.1 (2022-11-17)
 ### Features
 
-+ Chrome extension pages and content scripts supporting the use of vue, react, etc.
-+ Support sass/less in manifest.json.
++ Support Manifest V3.
 + Support Typescript.
-+ In development environments, content_scripts injected pages and Chrome extensions are automatically reloaded after content_scripts and background.service_worker are modified.
-
++ Support sass/less in manifest.json.
++ Support for multiple frameworks or libraries, such as vue, react, etc.
++ In development mode, Chrome extensions are automatically reloaded after modifying files.

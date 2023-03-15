@@ -84,6 +84,7 @@ npm run build
 + crx-executescript-files
 + crx-insertcss-files
 + crx-devtools
++ crx-webAccessibleResources
 
 ## 预览
 
