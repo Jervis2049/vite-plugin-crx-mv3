@@ -3,18 +3,17 @@
 
 ## 0.0.6 (2023-2-9)
 + refactor(input):  In the options phase of rollup, the html path of the manifest is used as the rollup input.
-+ fix: The input configuration of rollup is allowed to be empty.
-+ chore: code optimization
++ feat: allow rollupOptions.input to be empty.([f3ca3d8](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/f3ca3d8))
 
 ## 0.0.5 (2022-12-26)
-+ fix: Page does not reload after modifying content_scripts's sass/less.
-+ fix: Cannot remove dynamically injected CSS.
++ fix: page reload after modifying content_scripts's sass/less.
++ fix: remove dynamically injected CSS.
 
 ## 0.0.4 (2022-12-23)
-+ feat: Support devtools_page configuration in manifest.json. 
-+ fix: The content_scripts path is no longer restricted.
-+ fix: Set `apply` to `build`.
-+ chore: Listen for changes to manifest.json and re-fetch the contents of manifest.json.
++ feat: support devtools_page configuration in manifest.json. 
++ fix: content_scripts path (#2) ([70e0c84](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/70e0c84)), closes [#2](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/2)
++ fix: set `apply` to `build`.
++ chore: listen for changes to manifest.json and re-fetch the contents of manifest.json.
 
 ## 0.0.3 (2022-11-27)
 
