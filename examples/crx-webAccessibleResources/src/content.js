@@ -9,7 +9,7 @@ console.log(ChromeLogo) //output: chrome-extension://xxx/assets/Chrome-Logo.hash
  */
 const script = document.createElement('script')
 script.src = chrome.runtime.getURL('injected.js')
-;(document.head || document.documentElement).appendChild(s)
+;(document.head || document.documentElement).appendChild(script)
 
 /**
  * html file
