@@ -3,7 +3,6 @@ import { createRequire } from 'module'
 import { normalizeJsFilename, normalizeCssFilename } from '../utils'
 import { emitAsset } from './asset'
 import { resolve } from 'path'
-import { readFileSync } from 'fs'
 
 const require = createRequire(import.meta.url)
 
@@ -12,7 +11,7 @@ const dynamicImportAssetRex =
 const dynamicImportScriptRex =
   /(?<=chrome.scripting.executeScript\()[\s\S]*?(?=\))/gm
 
-async function generageDynamicImportScript(
+export async function generageDynamicImportScript(
   context: PluginContext,
   manifestContext,
   code: string
@@ -39,7 +38,7 @@ async function generageDynamicImportScript(
   )
 }
 
-async function generageDynamicImportAsset(
+export async function generageDynamicImportAsset(
   context: PluginContext,
   manifestContext,
   code: string
@@ -56,29 +55,4 @@ async function generageDynamicImportAsset(
   }
 
   return content
-}
-
-export async function emitServiceWorkScript(
-  context: PluginContext,
-  manifestContext,
-) {
-  const { rollup } = await import('rollup')  
-  const bundle = await rollup({
-    input: manifestContext.serviceWorkerAbsolutePath,
-    plugins: manifestContext.plugins
-  })
-  try {
-    const { output } = await bundle.generate({})
-    let code =  output[0].code + readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
-    let source = await generageDynamicImportScript(context, manifestContext, code)
-    source = await generageDynamicImportAsset(context, manifestContext, source)
-    context.emitFile({
-      type: 'asset',
-      source,
-      fileName: output[0].fileName
-    })
-
-  } finally {
-    await bundle.close()
-  }
 }

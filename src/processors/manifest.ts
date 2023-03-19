@@ -6,21 +6,22 @@ import type {
   ProcessorOptions
 } from '../manifest'
 import { basename, resolve } from 'path'
-import { readFileSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import {
   isJsonString,
   normalizePathResolve,
   isObject,
-  isString,
-  normalizeJsFilename
+  isString
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
-import { emitContentScripts, emitDevScript } from './content_scripts'
-import { emitWebAccessibleResources } from './web_accessible_resources'
-import { emitServiceWorkScript } from './background'
+import {
+  generageDynamicImportScript,
+  generageDynamicImportAsset
+} from './background'
 import { emitAsset } from './asset'
+import { emitDevScript } from './content_scripts'
 
-export function loadManifest(manifestPath:string){
+export function loadManifest(manifestPath: string) {
   const manifestRaw = readFileSync(manifestPath, 'utf8')
   if (!isJsonString(manifestRaw)) {
     throw new Error('The manifest.json is not valid.')
@@ -41,7 +42,7 @@ export function loadManifest(manifestPath:string){
 export class ManifestProcessor {
   plugins: Plugin[] = []
   assetPaths: string[] = [] // css & icons
-  contentScriptPaths: string[] = []
+  contentScriptChunkModules: string[] = []
   srcDir: string
   serviceWorkerAbsolutePath: string | undefined
   manifest: Partial<ChromeExtensionManifest> = {}
@@ -55,16 +56,20 @@ export class ManifestProcessor {
       (p) => p.name !== VITE_PLUGIN_CRX_MV3
     )
     let serviceworkerPath = this.manifest.background?.service_worker
-    if(serviceworkerPath){
-      this.serviceWorkerAbsolutePath = normalizePathResolve(options.srcDir, serviceworkerPath)
-    }    
+    if (serviceworkerPath) {
+      this.serviceWorkerAbsolutePath = normalizePathResolve(
+        options.srcDir,
+        serviceworkerPath
+      )
+    }
   }
 
-  public reloadManifest(manifestPath:string){
+  public reloadManifest(manifestPath: string) {
     this.manifest = loadManifest(manifestPath)
+    this.contentScriptChunkModules = []
   }
 
-  public getHtmlPaths(){
+  public getHtmlPaths() {
     const manifest = this.manifest
     return [
       manifest.action?.default_popup,
@@ -72,13 +77,73 @@ export class ManifestProcessor {
       manifest.devtools_page,
       manifest.options_page,
       manifest.options_ui?.page,
-      manifest.sandbox?.pages,
-    ].flat().filter((x)=>isString(x)).map((p)=>resolve(this.srcDir, p!))
+      manifest.sandbox?.pages
+    ]
+      .flat()
+      .filter((x) => isString(x))
+      .map((p) => resolve(this.srcDir, p!))
+  }
+
+  public getContentScriptPaths() {
+    let paths: string[] = []
+    for (const item of this.manifest.content_scripts ?? []) {
+      if (Array.isArray(item.js)) {
+        paths = [...paths, ...item.js]
+      }
+    }
+    return paths.map((p) => normalizePathResolve(this.srcDir, p!))
   }
 
   //generate manifest.json
-  public generateManifest(context: PluginContext) {
+  public async generateManifest(context: PluginContext, bundleMap) {
+    this.manifest = await emitDevScript(context, this)
+    let webAccessibleResources: string[] = []
     let manifest = this.manifest
+    for (const item of manifest.content_scripts ?? []) {
+      for (const [index, script] of (item.js ?? []).entries()) {
+        let scriptAbsolutePath = normalizePathResolve(
+          this.options.srcDir,
+          script
+        )
+        let chunk = bundleMap[scriptAbsolutePath]
+        if (chunk) {
+          // console.log('chunk', chunk)
+          this.contentScriptChunkModules = [
+            ...this.contentScriptChunkModules,
+            ...Object.keys(chunk.modules)
+          ]
+          let importedCss = [...chunk.viteMetadata.importedCss]
+          let importedAssets = [...chunk.viteMetadata.importedAssets]
+          webAccessibleResources = [
+            ...webAccessibleResources,
+            ...importedCss,
+            ...importedAssets,
+            ...chunk.imports
+          ]
+          if (importedCss.length) {
+            item.css = [...(item.css ?? []), ...importedCss]
+          }
+
+          item.js![index] = 'contentscript-loader-' + basename(chunk.fileName)
+          let content = `(function () {
+            (async () => {
+                  await import(
+                    chrome.runtime.getURL("${chunk.fileName}")
+                  );
+                })().catch(console.error);
+            })();`
+          let outputPath =
+            this.options.viteConfig.build.outDir + '/' + item.js![index]
+          writeFileSync(outputPath, content)
+          console.log('\n' + outputPath)
+        }
+      }
+    }
+    if (this.serviceWorkerAbsolutePath) {
+      manifest.background = {
+        service_worker: bundleMap[this.serviceWorkerAbsolutePath].fileName
+      }
+    }
     if (manifest.action?.default_popup) {
       manifest.action.default_popup = basename(manifest.action.default_popup)
     }
@@ -89,54 +154,47 @@ export class ManifestProcessor {
       manifest.options_page = basename(manifest.options_page)
     }
     if (manifest.options_ui?.page) {
-      manifest.options_ui.page = basename(manifest.options_ui?.page)
+      manifest.options_ui.page = basename(manifest.options_ui.page)
     }
-    if(manifest.sandbox?.pages){
-      manifest.sandbox.pages = manifest.sandbox.pages.map((page)=>basename(page))
+    if (manifest.sandbox?.pages) {
+      manifest.sandbox.pages = manifest.sandbox.pages.map((page) =>
+        basename(page)
+      )
     }
-    for (const key of Object.keys(manifest.chrome_url_overrides||{})) {
-        if(manifest.chrome_url_overrides?.[key]){
-          manifest.chrome_url_overrides[key] = basename(manifest.chrome_url_overrides[key])
+    for (const key of Object.keys(manifest.chrome_url_overrides || {})) {
+      if (manifest.chrome_url_overrides?.[key]) {
+        manifest.chrome_url_overrides[key] = basename(
+          manifest.chrome_url_overrides[key]
+        )
+      }
+    }
+    if (webAccessibleResources.length) {
+      manifest.web_accessible_resources = [
+        ...(manifest.web_accessible_resources ?? []),
+        {
+          matches: ['<all_urls>'],
+          resources: webAccessibleResources,
+          use_dynamic_url: true
         }
+      ]
     }
+
     context.emitFile({
       type: 'asset',
-      source: JSON.stringify(manifest, null , 2),
+      source: JSON.stringify(manifest, null, 2),
       fileName: 'manifest.json'
     })
   }
 
-  // public async transform(code: string, id: string, context: PluginContext) {    
-  //   let data = ''
-  //   if (this.serviceWorkerAbsolutePath === id) {
-  //     data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
-  //   }
-  //   let source = await generageDynamicImportScript(context, this, code)
-  //   source = await generageDynamicImportAsset(context, this, source)
-
-  //   return data + source
-  // }
-
-  public async generateServiceWorkScript(context: PluginContext){
-    if(this.manifest.background?.service_worker){
-      context.addWatchFile(this.serviceWorkerAbsolutePath!)
-      await emitServiceWorkScript(context, this)
-      this.manifest.background.service_worker = normalizeJsFilename(this.manifest.background.service_worker)
+  public async transform(code: string, id: string, context: PluginContext) {
+    let data = ''
+    if (this.serviceWorkerAbsolutePath === id) {
+      data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
     }
-  }
+    code = await generageDynamicImportScript(context, this, code)
+    code = await generageDynamicImportAsset(context, this, code)
 
-  public async generateContentScript(context: PluginContext) {
-    const { contentScriptPaths, manifest } =
-      await emitContentScripts(context, this)
-    this.contentScriptPaths = contentScriptPaths
-    this.manifest = manifest
-    this.manifest = await emitDevScript(context, this)
-  }
-
-  public async generateWebAccessibleResources(context: PluginContext) {
-    const { resourcePaths, manifest } = await emitWebAccessibleResources(context, this)
-    this.contentScriptPaths = [...this.contentScriptPaths, ...resourcePaths]
-    this.manifest = manifest
+    return data + code
   }
 
   public getAssetPaths() {
@@ -163,7 +221,7 @@ export class ManifestProcessor {
 
   // icon & content_scripts.css
   public async generateAsset(context: PluginContext) {
-    this.getAssetPaths()     
+    this.getAssetPaths()
     for (const path of this.assetPaths) {
       emitAsset(context, this.srcDir, path)
     }

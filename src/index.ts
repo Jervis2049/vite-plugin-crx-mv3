@@ -1,8 +1,16 @@
 import type { Plugin, ResolvedConfig } from 'vite'
+import { OutputAsset, OutputChunk } from 'rollup'
 import type { Processor } from './manifest'
 import { WebSocketServer } from 'ws'
 import { resolve, dirname, extname, basename } from 'path'
-import { normalizePath, normalizePathResolve, isObject } from './utils'
+import {
+  normalizePath,
+  normalizePathResolve,
+  isObject,
+  isString,
+  relaceCssUrlPrefix,
+  relaceResourcePathPrefix
+} from './utils'
 import { loadManifest, ManifestProcessor } from './processors/manifest'
 import { httpServerStart } from './http'
 import { VITE_PLUGIN_CRX_MV3, UPDATE_CONTENT, stubId } from './constants'
@@ -89,29 +97,41 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     options({ input, ...options }) {
       manifestProcessor.reloadManifest(manifestAbsolutPath)
       let htmlPaths = manifestProcessor.getHtmlPaths()
-      let finalInput = input
+      let contentScriptPaths = manifestProcessor.getContentScriptPaths()
       let buildInput = config.build.rollupOptions.input
+      let finalInput = input
 
-      if (!buildInput && !htmlPaths.length) {
-        finalInput = stubId
-      } else {
-        if (Array.isArray(buildInput)) {
-          finalInput = [...buildInput, ...htmlPaths]
-        } else if (isObject(buildInput)) {
-          const entryObj = {}
-          for (const item of htmlPaths) {
-            const name = basename(item, extname(item))
-            entryObj[name] = resolve(srcDir, item)
-          }
-          finalInput = { ...buildInput, ...entryObj }
-        } else {
-          finalInput = [
-            buildInput && typeof buildInput === 'string' ? buildInput: stubId,
-            ...htmlPaths
-          ]
+      let serviceWorkerPath = manifestProcessor.serviceWorkerAbsolutePath
+        ? [manifestProcessor.serviceWorkerAbsolutePath]
+        : []
+
+      if (Array.isArray(buildInput)) {
+        finalInput = [
+          ...buildInput,
+          ...htmlPaths,
+          ...contentScriptPaths,
+          ...serviceWorkerPath,
+          stubId
+        ]
+      } else if (isObject(buildInput)) {
+        const entryObj = { stub: stubId }
+        for (const item of [
+          ...htmlPaths,
+          ...contentScriptPaths,
+          ...serviceWorkerPath
+        ]) {
+          const name = basename(item, extname(item))
+          entryObj[name] = resolve(srcDir, item)
         }
+        finalInput = { ...buildInput, ...entryObj }
+      } else {
+        finalInput = [
+          buildInput && isString(buildInput) ? buildInput : stubId,
+          ...htmlPaths,
+          ...contentScriptPaths,
+          ...serviceWorkerPath
+        ]
       }
-      
       return { input: finalInput, ...options }
     },
     watchChange(id) {
@@ -120,11 +140,10 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     },
     async buildStart() {
       this.addWatchFile(manifestAbsolutPath)
-      await manifestProcessor.generateServiceWorkScript(this)
       await manifestProcessor.generateAsset(this)
-      await manifestProcessor.generateContentScript(this)
-      await manifestProcessor.generateWebAccessibleResources(this)
-      manifestProcessor.generateManifest(this)
+    },
+    transform(code, id) {
+      return manifestProcessor.transform(code, id, this)
     },
     resolveId(source) {
       if (source === stubId) return stubId
@@ -134,13 +153,38 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       if (id === stubId) return `console.log('stub')`
       return null
     },
-    generateBundle(options, bundle) {
+    async generateBundle(options, bundle) {
+      // console.log('bundle', bundle)
+      let bundleMap = {}
+      let contentScriptPaths = manifestProcessor.getContentScriptPaths()
+      let contentScriptImportedCss: string[] = []
+
       for (const [key, chunk] of Object.entries(bundle)) {
-        if (chunk.type === 'chunk' && chunk.facadeModuleId === stubId) {
-          delete bundle[key]
-          break
+        if (chunk.type === 'chunk' && chunk.facadeModuleId) {
+          if (chunk.facadeModuleId === stubId) {
+            delete bundle[key]
+          } else {
+            bundleMap[chunk.facadeModuleId] = chunk
+            if (contentScriptPaths.includes(chunk.facadeModuleId)) {
+              let output = bundle[key] as OutputChunk
+              output.code = relaceResourcePathPrefix(output.code)
+              contentScriptImportedCss = [
+                ...contentScriptImportedCss,
+                ...output.viteMetadata.importedCss
+              ]
+            }
+          }
         }
       }
+
+      for (const fileName of contentScriptImportedCss) {
+        let output = bundle[fileName] as OutputAsset
+        output.source = isString(output.source)
+          ? relaceCssUrlPrefix(output.source)
+          : ''
+      }
+
+      await manifestProcessor.generateManifest(this, bundleMap)
     },
     writeBundle() {
       if (socket) {
@@ -148,7 +192,9 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
           return normalizePathResolve(srcDir, path)
         })
         if (
-          manifestProcessor.contentScriptPaths.includes(changedFilePath) ||
+          manifestProcessor.contentScriptChunkModules.includes(
+            changedFilePath
+          ) ||
           assetPaths.includes(changedFilePath) ||
           changedFilePath === manifestProcessor.serviceWorkerAbsolutePath ||
           changedFilePath === manifestAbsolutPath

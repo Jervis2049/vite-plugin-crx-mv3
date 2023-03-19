@@ -1,4 +1,10 @@
-import type { ResolvedConfig, Plugin } from 'vite'
+import type { ResolvedConfig, Plugin, ChunkMetadata } from 'vite'
+
+declare module 'rollup' {
+  export interface RenderedChunk {
+    viteMetadata: ChunkMetadata
+  }
+}
 
 export type Icon = string
 export type MatchPattern = string
@@ -425,7 +431,7 @@ export interface WebAccessibleResource {
 export interface ProcessorOptions {
   srcDir: string
   port: number
-  manifest: ChromeExtensionManifest,
+  manifest: ChromeExtensionManifest
   viteConfig: ResolvedConfig
 }
 
@@ -433,16 +439,15 @@ export interface Processor {
   options: ProcessorOptions
   plugins: Plugin[]
   assetPaths: string[]
-  contentScriptPaths: string[]
+  contentScriptChunkModules: string[]
   serviceWorkerAbsolutePath: string | undefined
   srcDir: string
   manifest: Partial<ChromeExtensionManifest>
-  generateServiceWorkScript: (context) => void
-  getHtmlPaths: ()  => string[]
+  getHtmlPaths: () => string[]
+  getContentScriptPaths: () => string[]
   reloadManifest: (path) => void
   getAssetPaths: () => void
-  generateContentScript: (context) => Promise<void>
+  transform: (code: string, id: string, context) => void
   generateAsset: (context) => Promise<void>
-  generateManifest: (context) => void,
-  generateWebAccessibleResources: (context) => void,
+  generateManifest: (context, bundleMap) => Promise<void>
 }
