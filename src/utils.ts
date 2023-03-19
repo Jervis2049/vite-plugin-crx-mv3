@@ -1,5 +1,6 @@
 import os from 'os'
-import path from 'path'
+import { dirname, join, resolve, posix } from 'path'
+import { access, writeFile, mkdir } from 'node:fs/promises'
 
 export function isJsonString(str: string) {
   try {
@@ -14,11 +15,11 @@ export function slash(p: string): string {
 }
 
 export function normalizePath(id: string): string {
-  return path.posix.normalize(os.platform() === 'win32' ? slash(id) : id)
+  return posix.normalize(os.platform() === 'win32' ? slash(id) : id)
 }
 
 export function normalizePathResolve(p1: string, p2: string) {
-  return normalizePath(path.resolve(p1, p2))
+  return normalizePath(resolve(p1, p2))
 }
 
 export const normalizeJsFilename = (p: string) => p.replace(/\.[tj]sx?/, '.js')
@@ -29,8 +30,7 @@ export const normalizeCssFilename = (p: string) =>
 export function relaceCssUrlPrefix(code: string) {
   return code.replace(/(?<=url\()[\s\S]*?(?=\))/gm, function (str) {
     return (
-      'chrome-extension://' +
-      slash(path.join('__MSG_@@extension_id__', str.trim()))
+      'chrome-extension://' + slash(join('__MSG_@@extension_id__', str.trim()))
     )
   })
 }
@@ -54,3 +54,21 @@ export function isObject(value: unknown): value is Record<string, any> {
 
 export const isString = (value: unknown): value is string =>
   typeof value === 'string'
+
+export async function emitFile(path: string, content: string) {
+  try {
+    let dirName = dirname(path)
+    const isDirExist = await access(dirName)
+      .then(() => true)
+      .catch(() => false)
+
+    if (!isDirExist) {
+      await mkdir(dirName)
+      await emitFile(path, content)
+    } else {
+      await writeFile(path, content)
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}

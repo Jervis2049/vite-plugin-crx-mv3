@@ -6,12 +6,13 @@ import type {
   ProcessorOptions
 } from '../manifest'
 import { basename, resolve } from 'path'
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync } from 'fs'
 import {
   isJsonString,
   normalizePathResolve,
   isObject,
-  isString
+  isString,
+  emitFile
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
 import {
@@ -132,10 +133,10 @@ export class ManifestProcessor {
                   );
                 })().catch(console.error);
             })();`
-          let outputPath =
-            this.options.viteConfig.build.outDir + '/' + item.js![index]
-          writeFileSync(outputPath, content)
-          console.log('\n' + outputPath)
+          let outDir = this.options.viteConfig.build.outDir
+          let outputPath = outDir + '/' + item.js![index]
+          await emitFile(outputPath, content)
+          console.log(`\n${outDir}/\x1B[32m${item.js![index]}\x1B[`)
         }
       }
     }
@@ -178,7 +179,6 @@ export class ManifestProcessor {
         }
       ]
     }
-
     context.emitFile({
       type: 'asset',
       source: JSON.stringify(manifest, null, 2),
