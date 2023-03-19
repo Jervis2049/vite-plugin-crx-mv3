@@ -96,7 +96,7 @@ export class ManifestProcessor {
   }
 
   //generate manifest.json
-  public async generateManifest(context: PluginContext, bundleMap) {
+  public async generateManifest(context: PluginContext, bundle, bundleMap) {
     this.manifest = await emitDevScript(context, this)
     let webAccessibleResources: string[] = []
     let manifest = this.manifest
@@ -119,12 +119,18 @@ export class ManifestProcessor {
             ...webAccessibleResources,
             ...importedCss,
             ...importedAssets,
-            ...chunk.imports
+            ...chunk.imports,
+            chunk.fileName
           ]
+          for (const chunkImport of chunk.imports) {
+            if (bundle[chunkImport]) {
+              let importedCss = bundle[chunkImport].viteMetadata.importedCss
+              item.css = [...(item.css ?? []), ...importedCss]
+            }
+          }
           if (importedCss.length) {
             item.css = [...(item.css ?? []), ...importedCss]
           }
-
           item.js![index] = 'contentscript-loader-' + basename(chunk.fileName)
           let content = `(function () {
             (async () => {

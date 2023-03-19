@@ -449,5 +449,5 @@ export interface Processor {
   getAssetPaths: () => void
   transform: (code: string, id: string, context) => void
   generateAsset: (context) => Promise<void>
-  generateManifest: (context, bundleMap) => Promise<void>
+  generateManifest: (context, bundle, bundleMap) => Promise<void>
 }

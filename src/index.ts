@@ -184,7 +184,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
           : ''
       }
 
-      await manifestProcessor.generateManifest(this, bundleMap)
+      await manifestProcessor.generateManifest(this, bundle, bundleMap)
     },
     writeBundle() {
       if (socket) {
