@@ -9,7 +9,7 @@ export default defineConfig(({ mode }) => {
       })
     ],
     build: {
-      emptyOutDir: mode == 'production',
+      // emptyOutDir: mode == 'production',
       assetsInlineLimit: 0,
       rollupOptions: {
         input: ['iframe.html']

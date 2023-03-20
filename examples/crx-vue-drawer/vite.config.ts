@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     build: {
-      emptyOutDir: mode == 'production',
+      // emptyOutDir: mode == 'production',
     },
   }
 })

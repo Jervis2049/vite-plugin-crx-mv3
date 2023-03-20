@@ -20,7 +20,7 @@ import {
   generageDynamicImportAsset
 } from './background'
 import { emitAsset } from './asset'
-import { emitDevScript } from './content_scripts'
+import { generageDynamicImport, emitDevScript } from './content_scripts'
 
 export function loadManifest(manifestPath: string) {
   const manifestRaw = readFileSync(manifestPath, 'utf8')
@@ -41,9 +41,12 @@ export function loadManifest(manifestPath: string) {
 }
 
 export class ManifestProcessor {
+
+  private cache = {} 
   plugins: Plugin[] = []
   assetPaths: string[] = [] // css & icons
   contentScriptChunkModules: string[] = []
+  webAccessibleResources: string[] = []
   srcDir: string
   serviceWorkerAbsolutePath: string | undefined
   manifest: Partial<ChromeExtensionManifest> = {}
@@ -68,6 +71,8 @@ export class ManifestProcessor {
   public reloadManifest(manifestPath: string) {
     this.manifest = loadManifest(manifestPath)
     this.contentScriptChunkModules = []
+    this.webAccessibleResources = []
+    this.cache = {}
   }
 
   public getHtmlPaths() {
@@ -95,10 +100,20 @@ export class ManifestProcessor {
     return paths.map((p) => normalizePathResolve(this.srcDir, p!))
   }
 
+  public async transform(code: string, id: string, context: PluginContext) {
+    let data = ''
+    if (this.serviceWorkerAbsolutePath === id) {
+      data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
+    }
+    code = await generageDynamicImport(context, this, code)
+    code = await generageDynamicImportScript(context, this, code)
+    code = await generageDynamicImportAsset(context, this, code)
+    return data + code
+  }
+
   //generate manifest.json
   public async generateManifest(context: PluginContext, bundle, bundleMap) {
     this.manifest = await emitDevScript(context, this)
-    let webAccessibleResources: string[] = []
     let manifest = this.manifest
     for (const item of manifest.content_scripts ?? []) {
       for (const [index, script] of (item.js ?? []).entries()) {
@@ -115,8 +130,8 @@ export class ManifestProcessor {
           ]
           let importedCss = [...chunk.viteMetadata.importedCss]
           let importedAssets = [...chunk.viteMetadata.importedAssets]
-          webAccessibleResources = [
-            ...webAccessibleResources,
+          this.webAccessibleResources = [
+            ...this.webAccessibleResources,
             ...importedCss,
             ...importedAssets,
             ...chunk.imports,
@@ -175,12 +190,12 @@ export class ManifestProcessor {
         )
       }
     }
-    if (webAccessibleResources.length) {
+    if (this.webAccessibleResources.length) {
       manifest.web_accessible_resources = [
         ...(manifest.web_accessible_resources ?? []),
         {
           matches: ['<all_urls>'],
-          resources: webAccessibleResources,
+          resources: this.webAccessibleResources,
           use_dynamic_url: true
         }
       ]
@@ -190,17 +205,6 @@ export class ManifestProcessor {
       source: JSON.stringify(manifest, null, 2),
       fileName: 'manifest.json'
     })
-  }
-
-  public async transform(code: string, id: string, context: PluginContext) {
-    let data = ''
-    if (this.serviceWorkerAbsolutePath === id) {
-      data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
-    }
-    code = await generageDynamicImportScript(context, this, code)
-    code = await generageDynamicImportAsset(context, this, code)
-
-    return data + code
   }
 
   public getAssetPaths() {

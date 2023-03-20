@@ -2,6 +2,59 @@ import { PluginContext } from 'rollup'
 import { resolve } from 'path'
 import { readFileSync } from 'fs'
 import { CONTENT_SCRIPT_DEV_PATH, SERVICE_WORK_DEV_PATH } from '../constants'
+import { normalizeJsFilename, normalizeCssFilename } from '../utils'
+import { createRequire } from 'module'
+import { emitAsset } from './asset'
+
+const require = createRequire(import.meta.url)
+const { rollup } = require('rollup')
+
+const dynamicImportRex = /(?<=chrome.runtime.getURL\()[\s\S]*?(?=\))/gm
+
+const doBuild = (context, manifestContext, filePath) => {
+  console.log('filePath',filePath);
+  
+  rollup({
+    context: 'globalThis',
+    input: resolve(manifestContext.srcDir, filePath),
+    plugins: manifestContext.plugins
+  }).then(async (bundle) => {
+    const { output } = await bundle.generate({
+      entryFileNames: normalizeJsFilename(filePath)
+    })
+    const outputChunk = output[0]
+    context.emitFile({
+      type: 'asset',
+      source: outputChunk.code,
+      fileName: outputChunk.fileName
+    })
+  })
+}
+
+export async function generageDynamicImport(
+  context: PluginContext,
+  manifestContext,
+  code: string
+): Promise<string> {
+  let content =  code.replace(dynamicImportRex, (filePath) => {
+    filePath = filePath.replace(/"|'/g, '').trim()
+    let normalizePath = normalizeJsFilename(normalizeCssFilename(filePath))
+    const fileFullPath = resolve(manifestContext.srcDir, filePath)
+    context.addWatchFile(fileFullPath)
+    if (!manifestContext.cache[filePath]) {
+      if (/\.(js|ts)$/.test(filePath)) {
+        doBuild(context, manifestContext, filePath)
+      } else {
+        if (!filePath.endsWith('.html')) {
+          emitAsset(context, manifestContext.srcDir, filePath)
+        }
+      }
+      manifestContext.cache[filePath] = true
+    }
+    return `"${normalizePath}"`
+  })
+  return content
+}
 
 // scripts for dev
 export async function emitDevScript(
