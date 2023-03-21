@@ -1,14 +1,11 @@
 {
   "name": "crx-contentscript-sass-less",
   "description": "A Chrome extension demo.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "action": {},
   "content_scripts": [{
     "matches": [ "<all_urls>" ],
-    "css": ["css/content.less", "css/test.scss"]
+    "css": ["content.less", "test.scss"]
   }],
-  "background": {
-    "service_worker": "background.js"
-  },
   "manifest_version": 3
 }
