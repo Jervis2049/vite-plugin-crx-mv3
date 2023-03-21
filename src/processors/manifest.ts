@@ -1,4 +1,4 @@
-import { PluginContext } from 'rollup'
+import { PluginContext , InputPluginOption} from 'rollup'
 import type { Plugin } from 'vite'
 import type {
   ChromeExtensionManifest,
@@ -9,18 +9,16 @@ import { basename, resolve } from 'path'
 import { readFileSync } from 'fs'
 import {
   isJsonString,
+  normalizeJsFilename,
   normalizePathResolve,
   isObject,
   isString,
   emitFile
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
-import {
-  generageDynamicImportScript,
-  generageDynamicImportAsset
-} from './background'
+import * as backgroundParse from './background'
+import * as contentScriptsParse from './content_scripts'
 import { emitAsset } from './asset'
-import { generageDynamicImport, emitDevScript } from './content_scripts'
 
 export function loadManifest(manifestPath: string) {
   const manifestRaw = readFileSync(manifestPath, 'utf8')
@@ -41,8 +39,7 @@ export function loadManifest(manifestPath: string) {
 }
 
 export class ManifestProcessor {
-
-  private cache = {} 
+  private cache = {}
   plugins: Plugin[] = []
   assetPaths: string[] = [] // css & icons
   contentScriptChunkModules: string[] = []
@@ -65,6 +62,30 @@ export class ManifestProcessor {
         options.srcDir,
         serviceworkerPath
       )
+    }
+  }
+
+  public async doBuild(context, filePath) {
+    const { rollup } = await import('rollup')
+    const fileFullPath = resolve(this.srcDir, filePath)
+    context.addWatchFile(fileFullPath)
+    const bundle = await rollup({
+      context: 'globalThis',
+      input: fileFullPath,
+      plugins: this.plugins as InputPluginOption
+    })
+    try {
+      const { output } = await bundle.generate({
+        entryFileNames: normalizeJsFilename(filePath)
+      })
+      const outputChunk = output[0]
+      context.emitFile({
+        type: 'asset',
+        source: outputChunk.code,
+        fileName: outputChunk.fileName
+      })
+    } finally {
+      await bundle.close()
     }
   }
 
@@ -105,15 +126,23 @@ export class ManifestProcessor {
     if (this.serviceWorkerAbsolutePath === id) {
       data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
     }
-    code = await generageDynamicImport(context, this, code)
-    code = await generageDynamicImportScript(context, this, code)
-    code = await generageDynamicImportAsset(context, this, code)
+    code = await contentScriptsParse.generageDynamicImportScript(
+      context,
+      this,
+      code
+    )
+    code = await backgroundParse.generageDynamicImportScript(
+      context,
+      this,
+      code
+    )
+    code = await backgroundParse.generageDynamicImportAsset(context, this, code)
     return data + code
   }
 
   //generate manifest.json
   public async generateManifest(context: PluginContext, bundle, bundleMap) {
-    this.manifest = await emitDevScript(context, this)
+    this.manifest = await contentScriptsParse.emitDevScript(context, this)
     let manifest = this.manifest
     for (const item of manifest.content_scripts ?? []) {
       for (const [index, script] of (item.js ?? []).entries()) {

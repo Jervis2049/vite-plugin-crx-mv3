@@ -176,14 +176,12 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
           }
         }
       }
-
       for (const fileName of contentScriptImportedCss) {
         let output = bundle[fileName] as OutputAsset
         output.source = isString(output.source)
           ? relaceCssUrlPrefix(output.source)
           : ''
       }
-
       await manifestProcessor.generateManifest(this, bundle, bundleMap)
     },
     writeBundle() {
