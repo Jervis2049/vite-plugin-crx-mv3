@@ -1,12 +1,12 @@
-import { PluginContext , InputPluginOption} from 'rollup'
+import { PluginContext, InputPluginOption } from 'rollup'
 import type { Plugin } from 'vite'
 import type {
   ChromeExtensionManifest,
   ContentScript,
   ProcessorOptions
 } from '../manifest'
+import { readFile } from 'node:fs/promises'
 import { basename, resolve } from 'path'
-import { readFileSync } from 'fs'
 import {
   isJsonString,
   normalizeJsFilename,
@@ -20,8 +20,8 @@ import * as backgroundParse from './background'
 import * as contentScriptsParse from './content_scripts'
 import { emitAsset } from './asset'
 
-export function loadManifest(manifestPath: string) {
-  const manifestRaw = readFileSync(manifestPath, 'utf8')
+export async function loadManifest(manifestPath: string) {
+  const manifestRaw = await readFile(manifestPath, 'utf8')
   if (!isJsonString(manifestRaw)) {
     throw new Error('The manifest.json is not valid.')
   }
@@ -56,13 +56,6 @@ export class ManifestProcessor {
     this.plugins = options.viteConfig.plugins.filter(
       (p) => p.name !== VITE_PLUGIN_CRX_MV3
     )
-    let serviceworkerPath = this.manifest.background?.service_worker
-    if (serviceworkerPath) {
-      this.serviceWorkerAbsolutePath = normalizePathResolve(
-        options.srcDir,
-        serviceworkerPath
-      )
-    }
   }
 
   public async doBuild(context, filePath) {
@@ -89,9 +82,12 @@ export class ManifestProcessor {
     }
   }
 
-  public reloadManifest(manifestPath: string) {
-    this.manifest = loadManifest(manifestPath)
-    this.contentScriptChunkModules = []
+  public async reloadManifest(manifestPath: string) {
+    this.manifest = await loadManifest(manifestPath)
+    let serviceworkerPath = this.manifest.background?.service_worker
+    this.serviceWorkerAbsolutePath = serviceworkerPath
+      ? normalizePathResolve(this.options.srcDir, serviceworkerPath)
+      : ''
     this.webAccessibleResources = []
     this.cache = {}
   }
@@ -124,7 +120,7 @@ export class ManifestProcessor {
   public async transform(code: string, id: string, context: PluginContext) {
     let data = ''
     if (this.serviceWorkerAbsolutePath === id) {
-      data += readFileSync(resolve(__dirname, 'client/background.js'), 'utf8')
+      data += await readFile(resolve(__dirname, 'client/background.js'), 'utf8')
     }
     code = await contentScriptsParse.generageDynamicImportScript(
       context,
@@ -152,11 +148,6 @@ export class ManifestProcessor {
         )
         let chunk = bundleMap[scriptAbsolutePath]
         if (chunk) {
-          // console.log('chunk', chunk)
-          this.contentScriptChunkModules = [
-            ...this.contentScriptChunkModules,
-            ...Object.keys(chunk.modules)
-          ]
           let importedCss = [...chunk.viteMetadata.importedCss]
           let importedAssets = [...chunk.viteMetadata.importedAssets]
           this.webAccessibleResources = [
