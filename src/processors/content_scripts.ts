@@ -1,10 +1,14 @@
 import { PluginContext } from 'rollup'
 import { resolve } from 'path'
-import { readFileSync } from 'fs'
+import { readFile } from 'node:fs/promises'
 import { CONTENT_SCRIPT_DEV_PATH, SERVICE_WORK_DEV_PATH } from '../constants'
-import { normalizeJsFilename, normalizeCssFilename } from '../utils'
+import {
+  normalizeJsFilename,
+  normalizeCssFilename,
+  normalizePathResolve,
+  getContentFromCache
+} from '../utils'
 import { emitAsset } from './asset'
-
 
 const dynamicImportRex = /(?<=chrome.runtime.getURL\()[\s\S]*?(?=\))/gm
 
@@ -25,7 +29,8 @@ export async function generageDynamicImportScript(
       await manifestContext.doBuild(context, filePath)
     } else {
       if (!filePath.endsWith('.html')) {
-        await emitAsset(context, manifestContext.srcDir, filePath)
+        let fullPath = resolve(manifestContext.srcDir, filePath)
+        await emitAsset(context, filePath, fullPath)
       }
     }
   }
@@ -44,9 +49,11 @@ export async function emitDevScript(
 
   if (viteConfig.mode === 'production') return manifest
   if (!serviceWorkerPath && contentScripts?.length) {
-    let content = readFileSync(
-      resolve(__dirname, 'client/background.js'),
-      'utf8'
+    let backgroundPath = normalizePathResolve(__dirname, 'client/background.js')
+    let content = await getContentFromCache(
+      context,
+      backgroundPath,
+      readFile(backgroundPath, 'utf8')
     )
     manifest.background = {
       service_worker: SERVICE_WORK_DEV_PATH
@@ -62,7 +69,16 @@ export async function emitDevScript(
   }
   if (serviceWorkerPath || contentScripts?.length) {
     let code = `var PORT=${port},MENIFEST_NAME='${manifest.name}';`
-    let content = readFileSync(resolve(__dirname, 'client/content.js'), 'utf8')
+    let contentScriptDevPath = normalizePathResolve(
+      __dirname,
+      'client/content.js'
+    )
+    let content = await getContentFromCache(
+      context,
+      contentScriptDevPath,
+      readFile(contentScriptDevPath, 'utf8')
+    )
+
     context.emitFile({
       type: 'asset',
       source: code + content,

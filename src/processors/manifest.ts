@@ -13,7 +13,8 @@ import {
   normalizePathResolve,
   isObject,
   isString,
-  emitFile
+  emitFile,
+  getContentFromCache
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
 import * as backgroundParse from './background'
@@ -39,7 +40,6 @@ export async function loadManifest(manifestPath: string) {
 }
 
 export class ManifestProcessor {
-  private cache = {}
   plugins: Plugin[] = []
   assetPaths: string[] = [] // css & icons
   contentScriptChunkModules: string[] = []
@@ -89,7 +89,6 @@ export class ManifestProcessor {
       ? normalizePathResolve(this.options.srcDir, serviceworkerPath)
       : ''
     this.webAccessibleResources = []
-    this.cache = {}
   }
 
   public getHtmlPaths() {
@@ -120,7 +119,16 @@ export class ManifestProcessor {
   public async transform(code: string, id: string, context: PluginContext) {
     let data = ''
     if (this.serviceWorkerAbsolutePath === id) {
-      data += await readFile(resolve(__dirname, 'client/background.js'), 'utf8')
+      let backgroundPath = normalizePathResolve(
+        __dirname,
+        'client/background.js'
+      )
+      let content = await getContentFromCache(
+        context,
+        backgroundPath,
+        readFile(backgroundPath, 'utf8')
+      )
+      data += content
     }
     code = await contentScriptsParse.generageDynamicImportScript(
       context,
@@ -228,32 +236,35 @@ export class ManifestProcessor {
   }
 
   public getAssetPaths() {
-    this.assetPaths = []
+    let assetPaths: string[] = []
     const defaultIcon = this.manifest?.action?.default_icon
     if (defaultIcon && isString(defaultIcon)) {
-      this.assetPaths = [defaultIcon]
+      assetPaths = [defaultIcon]
     } else if (isObject(defaultIcon)) {
       let defaultIconPaths = Object.values(defaultIcon)
-      this.assetPaths = [...this.assetPaths, ...defaultIconPaths]
+      assetPaths = [...assetPaths, ...defaultIconPaths]
     }
     if (isObject(this.manifest.icons)) {
       let iconPaths = Object.values(this.manifest.icons)
-      this.assetPaths = [...this.assetPaths, ...iconPaths]
+      assetPaths = [...assetPaths, ...iconPaths]
     }
     if (Array.isArray(this.manifest.content_scripts)) {
       this.manifest.content_scripts.forEach((item: ContentScript) => {
         if (Array.isArray(item.css)) {
-          this.assetPaths = [...this.assetPaths, ...item.css]
+          assetPaths = [...assetPaths, ...item.css]
         }
       })
     }
+    return assetPaths
   }
 
   // icon & content_scripts.css
   public async generateAsset(context: PluginContext) {
-    this.getAssetPaths()
+    this.assetPaths = this.getAssetPaths()
     for (const path of this.assetPaths) {
-      emitAsset(context, this.srcDir, path)
+      let fullPath = normalizePathResolve(this.srcDir, path)
+      context.addWatchFile(fullPath)
+      emitAsset(context, path, fullPath)
     }
   }
 }
