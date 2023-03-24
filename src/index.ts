@@ -11,10 +11,9 @@ import {
   relaceCssUrlPrefix,
   relaceResourcePathPrefix
 } from './utils'
-import { loadManifest, ManifestProcessor } from './processors/manifest'
+import { ManifestProcessor } from './processors/manifest'
 import { httpServerStart } from './http'
 import { VITE_PLUGIN_CRX_MV3, UPDATE_CONTENT, stubId } from './constants'
-import type { ChromeExtensionManifest } from './manifest'
 
 interface Options {
   port?: number
@@ -38,13 +37,12 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
   let changedFilePath = ''
   let manifestAbsolutPath: string
   let manifestProcessor: Processor
-  let manifestContent: ChromeExtensionManifest
   let srcDir = dirname(manifest)
   let config: ResolvedConfig
   let popupAbsolutePath = ''
   let popupMoudles: string[] = []
 
-  async function websocketServerStart(manifest: ChromeExtensionManifest) {
+  async function websocketServerStart(manifest) {
     if (
       config.mode === 'production' ||
       (!manifest?.background?.service_worker &&
@@ -85,25 +83,19 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     async configResolved(_config: ResolvedConfig) {
       config = _config
       manifestAbsolutPath = normalizePathResolve(config.root, manifest)
-      manifestContent = await loadManifest(manifestAbsolutPath)
-      if (manifestContent.action?.default_popup) {
-        popupAbsolutePath = normalizePathResolve(
-          srcDir,
-          manifestContent.action.default_popup
-        )
-      }
-      // websocket service
-      await websocketServerStart(manifestContent)
-
       manifestProcessor = new ManifestProcessor({
-        port,
-        srcDir,
-        manifest: manifestContent,
+        manifestPath: manifest,
         viteConfig: config
       })
+      let defaultPopupPath = manifestProcessor.manifest.action?.default_popup
+      if (defaultPopupPath) {
+        popupAbsolutePath = normalizePathResolve(srcDir, defaultPopupPath)
+      }
+      // websocket service
+      await websocketServerStart(manifestProcessor.manifest)
     },
     async options({ input, ...options }) {
-      await manifestProcessor.reloadManifest(manifestAbsolutPath)
+      await manifestProcessor.loadManifest(manifestAbsolutPath)
       let htmlPaths = manifestProcessor.getHtmlPaths()
       let contentScriptPaths = manifestProcessor.getContentScriptPaths()
       let buildInput = config.build.rollupOptions.input
@@ -143,10 +135,12 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     },
     watchChange(id) {
       changedFilePath = normalizePath(id)
+      manifestProcessor.clearCacheById(this, changedFilePath)
       console.log(`\x1B[35mFile change detected :\x1B[0m ${changedFilePath}`)
     },
     async buildStart() {
       this.addWatchFile(manifestAbsolutPath)
+      await manifestProcessor.generateDevScript(this, port)
       await manifestProcessor.generateAsset(this)
     },
     transform(code, id) {

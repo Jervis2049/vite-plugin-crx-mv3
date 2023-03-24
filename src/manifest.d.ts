@@ -429,13 +429,12 @@ export interface WebAccessibleResource {
 }
 
 export interface ProcessorOptions {
-  srcDir: string
-  port: number
-  manifest: ChromeExtensionManifest
+  manifestPath: string
   viteConfig: ResolvedConfig
 }
 
 export interface Processor {
+  cache: Map<string, any>
   options: ProcessorOptions
   plugins: Plugin[]
   assetPaths: string[]
@@ -445,8 +444,10 @@ export interface Processor {
   manifest: Partial<ChromeExtensionManifest>
   getHtmlPaths: () => string[]
   getContentScriptPaths: () => string[]
-  reloadManifest: (path) => void
+  clearCacheById: (id: string) => void
+  loadManifest: (path) => void
   getAssetPaths: () => void
+  generateDevScript: (context, port: number) => void
   transform: (code: string, id: string, context) => void
   generateAsset: (context) => Promise<void>
   generateManifest: (context, bundle, bundleMap) => Promise<void>

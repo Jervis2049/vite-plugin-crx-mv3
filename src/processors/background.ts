@@ -1,5 +1,9 @@
 import { PluginContext } from 'rollup'
-import { normalizeJsFilename, normalizeCssFilename } from '../utils'
+import {
+  normalizeJsFilename,
+  normalizeCssFilename,
+  normalizePathResolve
+} from '../utils'
 import { emitAsset } from './asset'
 
 const dynamicImportAssetRex =
@@ -13,7 +17,7 @@ export async function generageDynamicImportScript(
   code: string
 ): Promise<string> {
   let sources: string[] = []
-  let content =  code.replace(dynamicImportScriptRex, (match) =>
+  let content = code.replace(dynamicImportScriptRex, (match) =>
     match.replace(/(?<=(files:\[)?)["|'][\s\S]*?["|'](?=\]?)/gm, (fileStr) => {
       const filePath = fileStr.replace(/"|'/g, '').trim()
       sources.push(filePath)
@@ -23,7 +27,7 @@ export async function generageDynamicImportScript(
   for (const filePath of sources) {
     if (/\.(js|ts)$/.test(filePath)) {
       await manifestContext.doBuild(context, filePath)
-    } 
+    }
   }
   return content
 }
@@ -41,7 +45,8 @@ export async function generageDynamicImportAsset(
     })
   )
   if (filePath) {
-    emitAsset(context, manifestContext.srcDir, filePath)
+    let fullPath = normalizePathResolve(manifestContext.srcDir, filePath)
+    emitAsset(context, filePath, fullPath)
   }
 
   return content

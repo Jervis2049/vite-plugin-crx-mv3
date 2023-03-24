@@ -40,9 +40,10 @@ export async function generageDynamicImportScript(
 // scripts for dev
 export async function emitDevScript(
   context: PluginContext,
+  port: number,
   manifestContext
 ): Promise<Record<string, any>> {
-  let { viteConfig, port } = manifestContext.options
+  let viteConfig = manifestContext.options.viteConfig
   let manifest = manifestContext.manifest
   let serviceWorkerPath = manifestContext.serviceWorkerAbsolutePath
   let contentScripts = manifest?.content_scripts

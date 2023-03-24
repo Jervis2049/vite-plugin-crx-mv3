@@ -6,7 +6,7 @@ import type {
   ProcessorOptions
 } from '../manifest'
 import { readFile } from 'node:fs/promises'
-import { basename, resolve } from 'path'
+import { basename, resolve, dirname } from 'path'
 import {
   isJsonString,
   normalizeJsFilename,
@@ -21,25 +21,8 @@ import * as backgroundParse from './background'
 import * as contentScriptsParse from './content_scripts'
 import { emitAsset } from './asset'
 
-export async function loadManifest(manifestPath: string) {
-  const manifestRaw = await readFile(manifestPath, 'utf8')
-  if (!isJsonString(manifestRaw)) {
-    throw new Error('The manifest.json is not valid.')
-  }
-  const manifest = JSON.parse(manifestRaw)
-  if (!manifest.name) {
-    throw new Error('The name field of manifest.json is required.')
-  }
-  if (!manifest.version) {
-    throw new Error('The version field of manifest.json is required.')
-  }
-  if (!manifest.manifest_version) {
-    throw new Error('The manifest_version field of manifest.json is required.')
-  }
-  return manifest
-}
-
 export class ManifestProcessor {
+  cache = new Map()
   plugins: Plugin[] = []
   assetPaths: string[] = [] // css & icons
   contentScriptChunkModules: string[] = []
@@ -51,16 +34,20 @@ export class ManifestProcessor {
 
   constructor(options: ProcessorOptions) {
     this.options = options
-    this.srcDir = options.srcDir
-    this.manifest = options.manifest
+    this.srcDir = dirname(options.manifestPath)
     this.plugins = options.viteConfig.plugins.filter(
       (p) => p.name !== VITE_PLUGIN_CRX_MV3
     )
+    let manifestAbsolutPath = normalizePathResolve(
+      options.viteConfig.root,
+      options.manifestPath
+    )
+    this.loadManifest(manifestAbsolutPath)
   }
 
   public async doBuild(context, filePath) {
     const { rollup } = await import('rollup')
-    const fileFullPath = resolve(this.srcDir, filePath)
+    const fileFullPath = normalizePathResolve(this.srcDir, filePath)
     context.addWatchFile(fileFullPath)
     const bundle = await rollup({
       context: 'globalThis',
@@ -82,13 +69,45 @@ export class ManifestProcessor {
     }
   }
 
-  public async reloadManifest(manifestPath: string) {
-    this.manifest = await loadManifest(manifestPath)
+  public async loadManifest(manifestPath: string) {
+    let manifestContent = (await getContentFromCache(
+      this,
+      manifestPath,
+      readFile(manifestPath, 'utf8')
+    )) as string
+
+    if (!isJsonString(manifestContent)) {
+      throw new Error('The manifest.json is not valid.')
+    }
+    const manifest = JSON.parse(manifestContent)
+    if (!manifest.name) {
+      throw new Error('The name field of manifest.json is required.')
+    }
+    if (!manifest.version) {
+      throw new Error('The version field of manifest.json is required.')
+    }
+    if (!manifest.manifest_version) {
+      throw new Error(
+        'The manifest_version field of manifest.json is required.'
+      )
+    }
+    this.manifest = manifest
     let serviceworkerPath = this.manifest.background?.service_worker
     this.serviceWorkerAbsolutePath = serviceworkerPath
-      ? normalizePathResolve(this.options.srcDir, serviceworkerPath)
+      ? normalizePathResolve(this.srcDir, serviceworkerPath)
       : ''
     this.webAccessibleResources = []
+  }
+
+  public clearCacheById(context, id) {
+    if (context.cache.has(id)) {
+      context.cache.delete(id)
+      console.log('context cache delete', id)
+    }
+    if (this.cache.has(id)) {
+      this.cache.delete(id)
+      console.log('cache delete', id)
+    }
   }
 
   public getHtmlPaths() {
@@ -124,7 +143,7 @@ export class ManifestProcessor {
         'client/background.js'
       )
       let content = await getContentFromCache(
-        context,
+        this,
         backgroundPath,
         readFile(backgroundPath, 'utf8')
       )
@@ -144,16 +163,16 @@ export class ManifestProcessor {
     return data + code
   }
 
+  public async generateDevScript(context, port) {
+    this.manifest = await contentScriptsParse.emitDevScript(context, port, this)
+  }
+
   //generate manifest.json
   public async generateManifest(context: PluginContext, bundle, bundleMap) {
-    this.manifest = await contentScriptsParse.emitDevScript(context, this)
     let manifest = this.manifest
     for (const item of manifest.content_scripts ?? []) {
       for (const [index, script] of (item.js ?? []).entries()) {
-        let scriptAbsolutePath = normalizePathResolve(
-          this.options.srcDir,
-          script
-        )
+        let scriptAbsolutePath = normalizePathResolve(this.srcDir, script)
         let chunk = bundleMap[scriptAbsolutePath]
         if (chunk) {
           let importedCss = [...chunk.viteMetadata.importedCss]

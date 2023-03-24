@@ -1,7 +1,6 @@
 import os from 'os'
 import { dirname, join, resolve, posix } from 'path'
 import { access, writeFile, mkdir } from 'node:fs/promises'
-import { PluginContext } from 'rollup'
 
 export function isJsonString(str: string) {
   try {
@@ -75,7 +74,7 @@ export async function emitFile(path: string, content: string) {
 }
 
 export async function getContentFromCache(
-  context: PluginContext,
+  context,
   path: string,
   getContentAsyncFun
 ) {
