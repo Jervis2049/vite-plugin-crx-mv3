@@ -75,16 +75,16 @@ export async function emitFile(path: string, content: string) {
 
 export async function getContentFromCache(
   context,
-  path: string,
+  id: string,
   getContentAsyncFun
 ) {
-  let content: Buffer | string
-  if (!context.cache.has(path)) {
+  let content
+  if (!context.cache.has(id)) {
     content = await getContentAsyncFun
-    context.cache.set(path, content)
+    context.cache.set(id, content)
   } else {
-    content = context.cache.get(path)
-    console.log('cached path: ' + path)
+    content = context.cache.get(id)
+    // console.log('cache:', id)
   }
   return content
 }

@@ -444,8 +444,9 @@ export interface Processor {
   manifest: Partial<ChromeExtensionManifest>
   getHtmlPaths: () => string[]
   getContentScriptPaths: () => string[]
-  clearCacheById: (id: string) => void
+  clearCacheById: (context, id: string) => void
   loadManifest: (path) => void
+  reLoadManifest: (path) => void
   getAssetPaths: () => void
   generateDevScript: (context, port: number) => void
   transform: (code: string, id: string, context) => void

@@ -54,6 +54,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     const server = serverOptions.server
     port = serverOptions.port
     const wss = new WebSocketServer({ noServer: true })
+
     wss.on('connection', function connection(ws) {
       console.log(`\x1B[32m[${VITE_PLUGIN_CRX_MV3}]\x1B[0m client connected.`)
       ws.on('message', () => {
@@ -87,15 +88,17 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
         manifestPath: manifest,
         viteConfig: config
       })
+      await manifestProcessor.loadManifest(manifestAbsolutPath)
+      // websocket service
+      await websocketServerStart(manifestProcessor.manifest)
+
       let defaultPopupPath = manifestProcessor.manifest.action?.default_popup
       if (defaultPopupPath) {
         popupAbsolutePath = normalizePathResolve(srcDir, defaultPopupPath)
       }
-      // websocket service
-      await websocketServerStart(manifestProcessor.manifest)
     },
     async options({ input, ...options }) {
-      await manifestProcessor.loadManifest(manifestAbsolutPath)
+      await manifestProcessor.reLoadManifest(manifestAbsolutPath)
       let htmlPaths = manifestProcessor.getHtmlPaths()
       let contentScriptPaths = manifestProcessor.getContentScriptPaths()
       let buildInput = config.build.rollupOptions.input

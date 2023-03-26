@@ -1,4 +1,4 @@
-import { PluginContext, InputPluginOption } from 'rollup'
+import rollup, { PluginContext, InputPluginOption } from 'rollup'
 import type { Plugin } from 'vite'
 import type {
   ChromeExtensionManifest,
@@ -6,19 +6,21 @@ import type {
   ProcessorOptions
 } from '../manifest'
 import { readFile } from 'node:fs/promises'
-import { basename, resolve, dirname } from 'path'
+import { basename, resolve, dirname, join } from 'path'
 import {
   isJsonString,
   normalizeJsFilename,
   normalizePathResolve,
+  normalizePath,
   isObject,
   isString,
   emitFile,
-  getContentFromCache
+  getContentFromCache,
+  normalizeCssFilename
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
 import * as backgroundParse from './background'
-import * as contentScriptsParse from './content_scripts'
+import * as contentScriptsParse from './content-scripts'
 import { emitAsset } from './asset'
 
 export class ManifestProcessor {
@@ -31,6 +33,7 @@ export class ManifestProcessor {
   serviceWorkerAbsolutePath: string | undefined
   manifest: Partial<ChromeExtensionManifest> = {}
   options: ProcessorOptions
+  packageJsonPath = ''
 
   constructor(options: ProcessorOptions) {
     this.options = options
@@ -42,7 +45,21 @@ export class ManifestProcessor {
       options.viteConfig.root,
       options.manifestPath
     )
+    try {
+      this.packageJsonPath = normalizePath(join(process.cwd(), 'package.json'))
+    } catch (error) {}
+    this.watchPackageJson(this.packageJsonPath)
     this.loadManifest(manifestAbsolutPath)
+  }
+
+  private watchPackageJson(input) {
+    if (!input) return
+    const watcher = rollup.watch({ input })
+    watcher.on('event', (event) => {
+      if (event.code == 'START') {
+        this.cache.delete(input)
+      }
+    })
   }
 
   public async doBuild(context, filePath) {
@@ -52,8 +69,12 @@ export class ManifestProcessor {
     const bundle = await rollup({
       context: 'globalThis',
       input: fileFullPath,
-      plugins: this.plugins as InputPluginOption
+      plugins: this.plugins as InputPluginOption,
+      cache: this.cache.get(fileFullPath)
     })
+    if (!this.cache.has(fileFullPath)) {
+      this.cache.set(fileFullPath, bundle.cache)
+    }
     try {
       const { output } = await bundle.generate({
         entryFileNames: normalizeJsFilename(filePath)
@@ -70,6 +91,17 @@ export class ManifestProcessor {
   }
 
   public async loadManifest(manifestPath: string) {
+    /* --------------- LOAD PACKAGE.JSON --------------- */
+    let packageJson = {}
+    if (this.packageJsonPath) {
+      let content = await getContentFromCache(
+        this,
+        this.packageJsonPath,
+        readFile(this.packageJsonPath, 'utf-8')
+      )
+      packageJson = JSON.parse(content as string)
+    }
+    /* --------------- LOAD MANIFEST.JSON --------------- */
     let manifestContent = (await getContentFromCache(
       this,
       manifestPath,
@@ -80,6 +112,15 @@ export class ManifestProcessor {
       throw new Error('The manifest.json is not valid.')
     }
     const manifest = JSON.parse(manifestContent)
+    manifest.name =
+      !manifest.name || manifest.name == 'auto'
+        ? packageJson.name
+        : manifest.name
+    manifest.version =
+      !manifest.version || manifest.version == 'auto'
+        ? packageJson.version
+        : manifest.version
+
     if (!manifest.name) {
       throw new Error('The name field of manifest.json is required.')
     }
@@ -96,17 +137,19 @@ export class ManifestProcessor {
     this.serviceWorkerAbsolutePath = serviceworkerPath
       ? normalizePathResolve(this.srcDir, serviceworkerPath)
       : ''
+  }
+
+  public async reLoadManifest(manifestPath: string) {
+    await this.loadManifest(manifestPath)
     this.webAccessibleResources = []
   }
 
   public clearCacheById(context, id) {
     if (context.cache.has(id)) {
       context.cache.delete(id)
-      console.log('context cache delete', id)
     }
     if (this.cache.has(id)) {
       this.cache.delete(id)
-      console.log('cache delete', id)
     }
   }
 
@@ -143,7 +186,7 @@ export class ManifestProcessor {
         'client/background.js'
       )
       let content = await getContentFromCache(
-        this,
+        context,
         backgroundPath,
         readFile(backgroundPath, 'utf8')
       )
@@ -171,6 +214,11 @@ export class ManifestProcessor {
   public async generateManifest(context: PluginContext, bundle, bundleMap) {
     let manifest = this.manifest
     for (const item of manifest.content_scripts ?? []) {
+      for (const [index, css] of (item.css ?? []).entries()) {
+        if (item.css) {
+          item.css[index] = normalizeCssFilename(css)
+        }
+      }
       for (const [index, script] of (item.js ?? []).entries()) {
         let scriptAbsolutePath = normalizePathResolve(this.srcDir, script)
         let chunk = bundleMap[scriptAbsolutePath]
