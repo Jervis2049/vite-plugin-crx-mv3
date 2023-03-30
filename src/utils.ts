@@ -4,7 +4,7 @@ import { access, writeFile, mkdir } from 'node:fs/promises'
 
 export function isJsonString(str: string) {
   try {
-    return typeof JSON.parse(str) === 'object'
+    return !!(JSON.parse(str) && str)
   } catch (e) {
     return false
   }
