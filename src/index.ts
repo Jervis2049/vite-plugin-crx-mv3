@@ -34,12 +34,12 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
   }
 
   let socket
-  let changedFilePath = ''
+  let changedFilePath: string
   let manifestAbsolutPath: string
   let manifestProcessor: Processor
-  let srcDir = dirname(manifest)
+  let srcDir: string = dirname(manifest)
   let config: ResolvedConfig
-  let popupAbsolutePath = ''
+  let popupAbsolutePath: string
   let popupMoudles: string[] = []
 
   async function websocketServerStart(manifest) {

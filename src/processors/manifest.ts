@@ -1,4 +1,4 @@
-import rollup, { PluginContext, InputPluginOption } from 'rollup'
+import rollup, { PluginContext, InputPluginOption, PluginCache } from 'rollup'
 import type { Plugin } from 'vite'
 import type {
   ChromeExtensionManifest,
@@ -24,7 +24,7 @@ import * as contentScriptsParse from './content-scripts'
 import { emitAsset } from './asset'
 
 export class ManifestProcessor {
-  cache = new Map()
+  cache: Map<string, any> = new Map()
   plugins: Plugin[] = []
   assetPaths: string[] = [] // css & icons
   contentScriptChunkModules: string[] = []
@@ -95,7 +95,7 @@ export class ManifestProcessor {
     let packageJson = {}
     if (this.packageJsonPath) {
       let content = await getContentFromCache(
-        this,
+        this.cache,
         this.packageJsonPath,
         readFile(this.packageJsonPath, 'utf-8')
       )
@@ -103,7 +103,7 @@ export class ManifestProcessor {
     }
     /* --------------- LOAD MANIFEST.JSON --------------- */
     let manifestContent = (await getContentFromCache(
-      this,
+      this.cache,
       manifestPath,
       readFile(manifestPath, 'utf8')
     )) as string
@@ -186,7 +186,7 @@ export class ManifestProcessor {
         'client/background.js'
       )
       let content = await getContentFromCache(
-        context,
+        context.cache,
         backgroundPath,
         readFile(backgroundPath, 'utf8')
       )

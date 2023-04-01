@@ -1,6 +1,7 @@
 import os from 'os'
 import { dirname, join, resolve, posix } from 'path'
 import { access, writeFile, mkdir } from 'node:fs/promises'
+import { PluginCache } from 'rollup'
 
 export function isJsonString(str: string) {
   try {
@@ -73,17 +74,17 @@ export async function emitFile(path: string, content: string) {
   }
 }
 
-export async function getContentFromCache(
-  context,
+export async function getContentFromCache<T>(
+  cache: PluginCache,
   id: string,
-  getContentAsyncFun
-) {
+  getContentAsyncFun: Promise<T>
+): Promise<T> {
   let content
-  if (!context.cache.has(id)) {
+  if (!cache.has(id)) {
     content = await getContentAsyncFun
-    context.cache.set(id, content)
+    cache.set(id, content)
   } else {
-    content = context.cache.get(id)
+    content = cache.get(id)
     // console.log('cache:', id)
   }
   return content

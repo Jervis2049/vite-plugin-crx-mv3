@@ -16,7 +16,7 @@ export async function emitAsset(
     await compileSass(context, originalPath, fullPath)
   } else {
     let content = await getContentFromCache(
-      context,
+      context.cache,
       fullPath,
       readFile(fullPath)
     )

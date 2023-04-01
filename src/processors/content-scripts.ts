@@ -52,7 +52,7 @@ export async function emitDevScript(
   if (!serviceWorkerPath && contentScripts?.length) {
     let backgroundPath = normalizePathResolve(__dirname, 'client/background.js')
     let content = await getContentFromCache(
-      context,
+      context.cache,
       backgroundPath,
       readFile(backgroundPath, 'utf8')
     )
@@ -65,7 +65,7 @@ export async function emitDevScript(
       fileName: SERVICE_WORK_DEV_PATH
     })
   }
-  if (!manifestContext.manifest.content_scripts) {
+  if (!contentScripts) {
     manifest.content_scripts = []
   }
   if (serviceWorkerPath || contentScripts?.length) {
@@ -75,7 +75,7 @@ export async function emitDevScript(
       'client/content.js'
     )
     let content = await getContentFromCache(
-      context,
+      context.cache,
       contentScriptDevPath,
       readFile(contentScriptDevPath, 'utf8')
     )
