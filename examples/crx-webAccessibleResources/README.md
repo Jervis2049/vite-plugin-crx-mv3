@@ -1,2 +1,0 @@
-Among the list of resources configured in `web_accessible_resources`, js(ts), css(less/scss), images can be compiled and html needs to be configured in
-`vite.config.js`, other formats will not be processed additionally.
