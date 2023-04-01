@@ -1,3 +1,9 @@
+## 0.1.0 (2023-4-1)
+
++ feat: allow the version and name fields of manifest.json to be missing or filled with `auto`, and get the fields of package.json as a supplement, closes [#8](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/8)
++ refactor(content_scripts): optimize the way content_scripts are loaded , closes [#4](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/4)
++ perf: optimize packing speed with caching
+
 ## 0.0.7 (2023-3-15)
 + feat: support for js, css compilation in web_accessible_resources [#5](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/5)
 
@@ -33,4 +39,4 @@
 + Support Typescript.
 + Support sass/less in manifest.json.
 + Support for multiple frameworks or libraries, such as vue, react, etc.
-+ In development mode, Chrome extensions are automatically reloaded after modifying files.
++ Live Reload

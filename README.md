@@ -11,8 +11,8 @@
 + Support Typescript.
 + Support sass/less in manifest.json.
 + Support for multiple frameworks or libraries, such as vue, react, etc.
-+ In development mode, Chrome extensions are automatically reloaded after modifying files.
-+ Simple configuration and good development experience.
++ Live Reload
++ Easy to get started
 
 ## Usage
 ### Install

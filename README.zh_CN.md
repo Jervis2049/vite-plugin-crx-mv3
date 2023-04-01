@@ -11,8 +11,8 @@
 + 支持Typescript
 + 支持在manifest.json中配置sass/less
 + 支持多种框架或库，如vue，react等等
-+ 在开发模式中，修改文件后Chrome扩展自动重载
-+ 配置简单，开发体验好
++ Live Reload
++ 上手简单
 
 ## 用法
 
