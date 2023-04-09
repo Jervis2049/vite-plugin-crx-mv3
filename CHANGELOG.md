@@ -1,3 +1,6 @@
+## 0.1.1 (2023-4-10)
++ fix: background.type should not be ignored in manifest.json
+
 ## 0.1.0 (2023-4-1)
 
 + feat: allow the version and name fields of manifest.json to be missing or filled with `auto`, and get the fields of package.json as a supplement, closes [#8](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/8)
