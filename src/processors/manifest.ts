@@ -258,6 +258,7 @@ export class ManifestProcessor {
     }
     if (this.serviceWorkerAbsolutePath) {
       manifest.background = {
+        ...manifest.background,
         service_worker: bundleMap[this.serviceWorkerAbsolutePath].fileName
       }
     }
