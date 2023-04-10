@@ -1,10 +1,10 @@
 ## 0.1.1 (2023-4-10)
-+ fix: background.type should not be ignored in manifest.json
++ fix: background.type should not be ignored in manifest.json (#14) ([845150d](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/845150d)), closes [#14](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/14)
 
 ## 0.1.0 (2023-4-1)
 
 + feat: allow the version and name fields of manifest.json to be missing or filled with `auto`, and get the fields of package.json as a supplement, closes [#8](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/8)
-+ refactor(content_scripts): optimize the way content_scripts are loaded , closes [#4](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/4)
++ refactor(content_scripts): optimize the way content_scripts are loaded , closes [#4](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/4) [#7](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/7)
 + perf: optimize packing speed with caching
 
 ## 0.0.7 (2023-3-15)
@@ -12,7 +12,7 @@
 
 ## 0.0.6 (2023-2-9)
 + refactor(input):  In the options phase of rollup, the html path of the manifest is used as the rollup input.
-+ feat: allow rollupOptions.input to be empty.([f3ca3d8](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/f3ca3d8))
++ feat: allow rollupOptions.input to be empty.
 
 ## 0.0.5 (2022-12-26)
 + fix: page reload after modifying content_scripts's sass/less.
