@@ -57,7 +57,6 @@ export async function emitDevScript(
       readFile(backgroundPath, 'utf8')
     )
     manifest.background = {
-      ...manifest.background,
       service_worker: SERVICE_WORK_DEV_PATH
     }
     context.emitFile({
