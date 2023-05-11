@@ -19,10 +19,11 @@ import { VITE_PLUGIN_CRX_MV3, UPDATE_CONTENT, stubId } from './constants'
 interface Options {
   port?: number
   manifest: string
+  reloadPage?: boolean
 }
 
 export default function crxMV3(options: Partial<Options> = {}): Plugin {
-  let { port = 8181, manifest = '' } = options
+  let { port = 8181, manifest = '', reloadPage = true } = options
 
   if (
     !manifest ||
@@ -144,7 +145,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
     },
     async buildStart() {
       this.addWatchFile(manifestAbsolutPath)
-      await manifestProcessor.generateDevScript(this, port)
+      await manifestProcessor.generateDevScript(this, port, reloadPage)
       await manifestProcessor.generateAsset(this)
       await generateLocales(this, config.root, srcDir)
     },
