@@ -43,6 +43,13 @@ pnpm add vite-plugin-crx-mv3 -D
 
 Chrome扩展的manifest.json文件路径。
 
+#### reloadPage
+
+- **Type:** `blooen`
+- **Default :** `true`
+
+控制dev环境下自动加载页面
+
 ### 配置
 ```js
 import { defineConfig } from 'vite'
