@@ -207,8 +207,13 @@ export class ManifestProcessor {
     return data + code
   }
 
-  public async generateDevScript(context, port) {
-    this.manifest = await contentScriptsParse.emitDevScript(context, port, this)
+  public async generateDevScript(context, port, reloadPage) {
+    this.manifest = await contentScriptsParse.emitDevScript(
+      context,
+      port,
+      this,
+      reloadPage
+    )
   }
 
   //generate manifest.json

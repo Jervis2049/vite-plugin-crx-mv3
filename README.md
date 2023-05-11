@@ -41,6 +41,13 @@ Create a websocket connection. Notify Chrome extension clients to reload when ch
 
 Path to the chrome extension's manifest.json
 
+#### reloadPage
+
+- **Type:** `blooen`
+- **Default :** `true`
+
+Control automatic page loading in dev environment
+
 ### Configuration
 
 ```js

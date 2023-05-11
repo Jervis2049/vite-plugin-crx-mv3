@@ -448,7 +448,7 @@ export interface Processor {
   loadManifest: (path) => void
   reLoadManifest: (path) => void
   getAssetPaths: () => void
-  generateDevScript: (context, port: number) => void
+  generateDevScript: (context, port: number, reloadPage: boolean) => void
   transform: (code: string, id: string, context) => void
   generateAsset: (context) => Promise<void>
   generateManifest: (context, bundle, bundleMap) => Promise<void>
