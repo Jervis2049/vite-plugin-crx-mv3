@@ -1,3 +1,10 @@
+
+## 0.1.3 (2023-5-11)
++ feat: Add the `reloadPage` option to control whether the page that contentScripts acts on is reloaded in the dev env. (#20) ([e77867f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/e77867f)), closes [#20](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/20)
+
+## 0.1.2 (2023-5-5)
++ fix: production build never ends. (#17) ([28117f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/28117f)), closes [#17](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/17)
+
 ## 0.1.1 (2023-4-10)
 + fix: background.type should not be ignored in manifest.json (#14) ([845150d](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/845150d)), closes [#14](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/14)
 

@@ -41,7 +41,8 @@ export async function generageDynamicImportScript(
 export async function emitDevScript(
   context: PluginContext,
   port: number,
-  manifestContext
+  manifestContext,
+  reloadPage: boolean
 ): Promise<Record<string, any>> {
   let viteConfig = manifestContext.options.viteConfig
   let manifest = manifestContext.manifest
@@ -69,7 +70,7 @@ export async function emitDevScript(
     manifest.content_scripts = []
   }
   if (serviceWorkerPath || contentScripts?.length) {
-    let code = `var PORT=${port},MENIFEST_NAME='${manifest.name}';`
+    let code = `var PORT=${port},MENIFEST_NAME='${manifest.name}',RELOADPAGE=${reloadPage};`
     let contentScriptDevPath = normalizePathResolve(
       __dirname,
       'client/content.js'

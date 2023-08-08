@@ -48,7 +48,8 @@ export class ManifestProcessor {
     try {
       this.packageJsonPath = normalizePath(join(process.cwd(), 'package.json'))
     } catch (error) {}
-    this.watchPackageJson(this.packageJsonPath)
+    if (options.viteConfig.build.watch)
+      this.watchPackageJson(this.packageJsonPath)
     this.loadManifest(manifestAbsolutPath)
   }
 
@@ -206,8 +207,13 @@ export class ManifestProcessor {
     return data + code
   }
 
-  public async generateDevScript(context, port) {
-    this.manifest = await contentScriptsParse.emitDevScript(context, port, this)
+  public async generateDevScript(context, port, reloadPage) {
+    this.manifest = await contentScriptsParse.emitDevScript(
+      context,
+      port,
+      this,
+      reloadPage
+    )
   }
 
   //generate manifest.json
