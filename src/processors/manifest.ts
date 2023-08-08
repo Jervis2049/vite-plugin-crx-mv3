@@ -1,4 +1,4 @@
-import rollup, { PluginContext, InputPluginOption, PluginCache } from 'rollup'
+import rollup, { PluginContext, InputPluginOption } from 'rollup'
 import type { Plugin } from 'vite'
 import type {
   ChromeExtensionManifest,

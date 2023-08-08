@@ -12,6 +12,7 @@ import {
   relaceResourcePathPrefix
 } from './utils'
 import { ManifestProcessor } from './processors/manifest'
+import { generateLocales } from './processors/i18n'
 import { httpServerStart } from './http'
 import { VITE_PLUGIN_CRX_MV3, UPDATE_CONTENT, stubId } from './constants'
 
@@ -145,6 +146,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       this.addWatchFile(manifestAbsolutPath)
       await manifestProcessor.generateDevScript(this, port)
       await manifestProcessor.generateAsset(this)
+      await generateLocales(this, config.root, srcDir)
     },
     transform(code, id) {
       return manifestProcessor.transform(code, id, this)
