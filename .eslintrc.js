@@ -10,6 +10,7 @@ module.exports = {
     sourceType: 'module'
   },
   rules: {
+    'no-useless-catch': 'off',
     'prefer-const': 'off',
     'node/no-missing-import': 'off',
     'node/no-extraneous-import': 'off',
