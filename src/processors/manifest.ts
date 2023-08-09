@@ -1,4 +1,4 @@
-import rollup, { PluginContext, InputPluginOption } from 'rollup'
+import { PluginContext, InputPluginOption, watch } from 'rollup'
 import type { Plugin } from 'vite'
 import type {
   ChromeExtensionManifest,
@@ -55,7 +55,7 @@ export class ManifestProcessor {
 
   private watchPackageJson(input) {
     if (!input) return
-    const watcher = rollup.watch({ input })
+    const watcher = watch({ input })
     watcher.on('event', (event) => {
       if (event.code == 'START') {
         this.cache.delete(input)
