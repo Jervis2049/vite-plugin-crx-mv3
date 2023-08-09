@@ -1,0 +1,8 @@
+{
+    "appName": {
+      "message": "i18n example"
+    },
+    "appDesc": {
+      "message": "This extension supports multiple languages."
+    }
+}

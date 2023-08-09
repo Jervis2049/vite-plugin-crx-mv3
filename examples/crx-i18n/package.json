@@ -1,0 +1,13 @@
+{
+  "name": "crx-i18n",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "vite build"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "vite-plugin-crx-mv3": "workspace:*",
+    "vite": "^3.0.9"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "__MSG_appName__",
+  "description": "__MSG_appDesc__",
+  "default_locale": "zh_CN",
+  "action": {
+    "default_popup": "../popup.html"
+  },
+  "manifest_version": 3
+}
