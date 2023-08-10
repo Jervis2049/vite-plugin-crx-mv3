@@ -27,20 +27,13 @@ async function getAllFilePaths(directoryPath) {
   }
 }
 
-export async function generateLocales(
-  context,
-  rootPath: string,
-  srcDir: string
-) {
-  let localesDir = `${rootPath}/${srcDir}/_locales`
+export async function generateLocales(context, srcPath: string) {
+  let localesDir = path.join(srcPath, '_locales')
   if (fs.existsSync(localesDir)) {
     const fileFullPaths = await getAllFilePaths(localesDir)
     for (const fileFullPath of fileFullPaths) {
       context.addWatchFile(fileFullPath)
-      const relativePath = path.relative(
-        path.join(rootPath, srcDir),
-        fileFullPath
-      )
+      const relativePath = path.relative(srcPath, fileFullPath)
       emitAsset(context, relativePath, normalizePath(fileFullPath))
     }
   }

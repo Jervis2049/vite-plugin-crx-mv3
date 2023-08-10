@@ -2,7 +2,7 @@ import type { Plugin, ResolvedConfig } from 'vite'
 import { OutputAsset, OutputChunk } from 'rollup'
 import type { Processor } from './manifest'
 import { WebSocketServer } from 'ws'
-import { resolve, dirname, extname, basename } from 'path'
+import { resolve, dirname, extname, basename, join } from 'path'
 import {
   normalizePath,
   normalizePathResolve,
@@ -147,7 +147,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       this.addWatchFile(manifestAbsolutPath)
       await manifestProcessor.generateDevScript(this, port, reloadPage)
       await manifestProcessor.generateAsset(this)
-      await generateLocales(this, config.root, srcDir)
+      await generateLocales(this, join(config.root, srcDir))
     },
     transform(code, id) {
       return manifestProcessor.transform(code, id, this)
