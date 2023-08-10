@@ -2,8 +2,8 @@
 
 
 ## 0.1.4 (2023-8-10)
-+ feat: support i18n (#27) ([e77867f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/1bfcc91)), closes [#20](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/27)
-+ build: support both cjs and esm (#28) ([e77867f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/1f9dd59)), closes [#20](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/28)
++ feat: support i18n (#27) ([e77867f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/1bfcc91)), closes [#27](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/27)
++ build: support both cjs and esm (#28) ([e77867f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/1f9dd59)), closes [#28](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/28)
 ## 0.1.3 (2023-5-11)
 + feat: Add the `reloadPage` option to control whether the page that contentScripts acts on is reloaded in the dev env. (#20) ([e77867f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/e77867f)), closes [#20](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/20)
 
