@@ -4,5 +4,8 @@
     },
     "appDesc": {
       "message": "This extension supports multiple languages."
+    },
+    "popupText":{
+      "message": "Hello World!"
     }
 }
