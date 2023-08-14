@@ -70,7 +70,7 @@ export default function crxMV3(options: Partial<Options> = {}): Plugin {
       socket = ws
     })
     server.on('upgrade', function upgrade(request, socket, head) {
-      if (request.url === `/${manifest.name}/crx`) {
+      if (request.url === `/${encodeURI(manifest.name)}/crx`) {
         wss.handleUpgrade(request, socket, head, function done(ws) {
           wss.emit('connection', ws, request)
         })
