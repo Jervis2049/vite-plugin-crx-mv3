@@ -64,7 +64,7 @@ export async function emitFile(path: string, content: string) {
       .catch(() => false)
 
     if (!isDirExist) {
-      await mkdir(dirName)
+      await mkdir(dirName, { recursive: true })
       await emitFile(path, content)
     } else {
       await writeFile(path, content)
