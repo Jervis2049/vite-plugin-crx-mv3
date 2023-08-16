@@ -1,4 +1,5 @@
 import os from 'os'
+import acorn from 'acorn'
 import { dirname, join, resolve, posix } from 'path'
 import { access, writeFile, mkdir } from 'node:fs/promises'
 import { PluginCache } from 'rollup'
@@ -88,4 +89,20 @@ export async function getContentFromCache<T>(
     // console.log('cache:', id)
   }
   return content
+}
+
+//Match valid code sections, excluding comments
+export function removeCommentsFromCode(code: string) {
+  // 使用acorn解析代码，并获取注释
+  const comments = []
+  acorn.parse(code, {
+    ecmaVersion: 2020,
+    onComment: comments
+  })
+  // 按照注释在代码中的位置，从后往前删除
+  for (let i = comments.length - 1; i >= 0; i--) {
+    const comment = comments[i]
+    code = code.slice(0, comment.start) + code.slice(comment.end)
+  }
+  return code
 }

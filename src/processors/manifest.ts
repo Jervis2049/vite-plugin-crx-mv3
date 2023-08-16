@@ -16,7 +16,8 @@ import {
   isString,
   emitFile,
   getContentFromCache,
-  normalizeCssFilename
+  normalizeCssFilename,
+  removeCommentsFromCode
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
 import * as backgroundParse from './background'
@@ -192,6 +193,12 @@ export class ManifestProcessor {
         readFile(backgroundPath, 'utf8')
       )
       data += content
+    }
+    if (
+      this.getContentScriptPaths().includes(id) ||
+      this.serviceWorkerAbsolutePath === id
+    ) {
+      code = removeCommentsFromCode(code)
     }
     code = await contentScriptsParse.generageDynamicImportScript(
       context,
