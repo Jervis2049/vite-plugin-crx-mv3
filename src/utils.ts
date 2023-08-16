@@ -97,7 +97,8 @@ export function removeCommentsFromCode(code: string) {
   const comments = []
   acorn.parse(code, {
     ecmaVersion: 2020,
-    onComment: comments
+    onComment: comments,
+    sourceType: 'module'
   })
   // 按照注释在代码中的位置，从后往前删除
   for (let i = comments.length - 1; i >= 0; i--) {
