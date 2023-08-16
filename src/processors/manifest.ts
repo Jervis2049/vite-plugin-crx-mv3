@@ -5,7 +5,6 @@ import type {
   ContentScript,
   ProcessorOptions
 } from '../manifest'
-import { readFile } from 'node:fs/promises'
 import { basename, resolve, dirname, join } from 'path'
 import {
   isJsonString,
@@ -96,18 +95,13 @@ export class ManifestProcessor {
     /* --------------- LOAD PACKAGE.JSON --------------- */
     let packageJson = {}
     if (this.packageJsonPath) {
-      let content = await getContentFromCache(
-        this.cache,
-        this.packageJsonPath,
-        readFile(this.packageJsonPath, 'utf-8')
-      )
+      let content = await getContentFromCache(this.cache, this.packageJsonPath)
       packageJson = JSON.parse(content as string)
     }
     /* --------------- LOAD MANIFEST.JSON --------------- */
     let manifestContent = (await getContentFromCache(
       this.cache,
-      manifestPath,
-      readFile(manifestPath, 'utf8')
+      manifestPath
     )) as string
 
     if (!isJsonString(manifestContent)) {
@@ -184,11 +178,7 @@ export class ManifestProcessor {
     let data = ''
     if (this.serviceWorkerAbsolutePath === id) {
       let swPath = normalizePathResolve(__dirname, 'client/sw.js')
-      let content = await getContentFromCache(
-        context.cache,
-        swPath,
-        readFile(swPath, 'utf8')
-      )
+      let content = await getContentFromCache(context.cache, swPath, 'utf8')
       data += content
     }
     if (

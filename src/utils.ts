@@ -1,7 +1,8 @@
 import os from 'os'
 import acorn from 'acorn'
 import { dirname, join, resolve, posix } from 'path'
-import { access, writeFile, mkdir } from 'node:fs/promises'
+import { ObjectEncodingOptions, OpenMode } from 'node:fs'
+import { access, writeFile, mkdir, readFile } from 'node:fs/promises'
 import { PluginCache } from 'rollup'
 
 export function isJsonString(str: string) {
@@ -75,18 +76,21 @@ export async function emitFile(path: string, content: string) {
   }
 }
 
-export async function getContentFromCache<T>(
+export async function getContentFromCache(
   cache: PluginCache,
-  id: string,
-  getContentAsyncFun: Promise<T>
-): Promise<T> {
+  path: string,
+  readFileOpts:
+    | (ObjectEncodingOptions & { flag?: OpenMode | undefined })
+    | BufferEncoding
+    | null = null
+): Promise<string | Buffer> {
   let content
-  if (!cache.has(id)) {
-    content = await getContentAsyncFun
-    cache.set(id, content)
+  if (!cache.has(path)) {
+    content = await readFile(path, readFileOpts)
+    cache.set(path, content)
   } else {
-    content = cache.get(id)
-    // console.log('cache:', id)
+    content = cache.get(path)
+    // console.log('cache:', path)
   }
   return content
 }

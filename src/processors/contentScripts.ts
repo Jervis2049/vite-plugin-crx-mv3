@@ -1,6 +1,5 @@
 import { PluginContext } from 'rollup'
 import { resolve } from 'path'
-import { readFile } from 'node:fs/promises'
 import { CONTENT_SCRIPT_DEV_PATH, SERVICE_WORK_DEV_PATH } from '../constants'
 import {
   normalizeJsFilename,
@@ -52,11 +51,7 @@ export async function emitDevScript(
   if (viteConfig.mode === 'production') return manifest
   if (!serviceWorkerPath && contentScripts?.length) {
     let swPath = normalizePathResolve(__dirname, 'client/sw.js')
-    let content = await getContentFromCache(
-      context.cache,
-      swPath,
-      readFile(swPath, 'utf8')
-    )
+    let content = await getContentFromCache(context.cache, swPath)
     manifest.background = {
       service_worker: SERVICE_WORK_DEV_PATH
     }
@@ -78,7 +73,7 @@ export async function emitDevScript(
     let content = await getContentFromCache(
       context.cache,
       contentScriptDevPath,
-      readFile(contentScriptDevPath, 'utf8')
+      'utf8'
     )
 
     context.emitFile({
