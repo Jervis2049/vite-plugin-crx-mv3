@@ -9,7 +9,7 @@
     "js": ["content.js"]
   }],
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "sw.js"
   },
   "manifest_version": 3
 }

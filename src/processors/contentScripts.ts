@@ -51,11 +51,11 @@ export async function emitDevScript(
 
   if (viteConfig.mode === 'production') return manifest
   if (!serviceWorkerPath && contentScripts?.length) {
-    let backgroundPath = normalizePathResolve(__dirname, 'client/background.js')
+    let swPath = normalizePathResolve(__dirname, 'client/sw.js')
     let content = await getContentFromCache(
       context.cache,
-      backgroundPath,
-      readFile(backgroundPath, 'utf8')
+      swPath,
+      readFile(swPath, 'utf8')
     )
     manifest.background = {
       service_worker: SERVICE_WORK_DEV_PATH

@@ -20,8 +20,8 @@ import {
   removeCommentsFromCode
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
-import * as backgroundParse from './background'
-import * as contentScriptsParse from './content-scripts'
+import * as serviceWorkParse from './serviceWork'
+import * as contentScriptsParse from './contentScripts'
 import { emitAsset } from './asset'
 
 export class ManifestProcessor {
@@ -183,14 +183,11 @@ export class ManifestProcessor {
   public async transform(code: string, id: string, context: PluginContext) {
     let data = ''
     if (this.serviceWorkerAbsolutePath === id) {
-      let backgroundPath = normalizePathResolve(
-        __dirname,
-        'client/background.js'
-      )
+      let swPath = normalizePathResolve(__dirname, 'client/sw.js')
       let content = await getContentFromCache(
         context.cache,
-        backgroundPath,
-        readFile(backgroundPath, 'utf8')
+        swPath,
+        readFile(swPath, 'utf8')
       )
       data += content
     }
@@ -205,12 +202,16 @@ export class ManifestProcessor {
       this,
       code
     )
-    code = await backgroundParse.generageDynamicImportScript(
+    code = await serviceWorkParse.generageDynamicImportScript(
       context,
       this,
       code
     )
-    code = await backgroundParse.generageDynamicImportAsset(context, this, code)
+    code = await serviceWorkParse.generageDynamicImportAsset(
+      context,
+      this,
+      code
+    )
     return data + code
   }
 
