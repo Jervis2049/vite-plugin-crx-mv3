@@ -2,7 +2,7 @@ import { PluginContext } from 'rollup'
 import { normalize } from 'path'
 import { compileSass } from '../compiler/compile-sass'
 import { compileLess } from '../compiler/compile-less'
-import { getContentFromCache } from '../utils'
+import { readFileSync } from 'fs'
 
 export async function emitAsset(
   context: PluginContext,
@@ -14,7 +14,7 @@ export async function emitAsset(
   } else if (originalPath.endsWith('.scss')) {
     await compileSass(context, originalPath, fullPath)
   } else {
-    let content = await getContentFromCache(context.cache, fullPath)
+    let content = readFileSync(fullPath)
     context.emitFile({
       type: 'asset',
       source: content,
