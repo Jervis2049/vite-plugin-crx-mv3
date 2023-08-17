@@ -101,7 +101,8 @@ export class ManifestProcessor {
     /* --------------- LOAD MANIFEST.JSON --------------- */
     let manifestContent = (await getContentFromCache(
       this.cache,
-      manifestPath
+      manifestPath,
+      'utf8'
     )) as string
 
     if (!isJsonString(manifestContent)) {
