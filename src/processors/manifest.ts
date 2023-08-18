@@ -193,16 +193,8 @@ export class ManifestProcessor {
       this,
       code
     )
-    code = await serviceWorkParse.generageDynamicImportScript(
-      context,
-      this,
-      code
-    )
-    code = await serviceWorkParse.generageDynamicImportAsset(
-      context,
-      this,
-      code
-    )
+    code = await serviceWorkParse.generageDynamicImports(context, this, code)
+
     return data + code
   }
 

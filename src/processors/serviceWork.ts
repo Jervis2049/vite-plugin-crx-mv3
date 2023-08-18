@@ -6,48 +6,40 @@ import {
 } from '../utils'
 import { emitAsset } from './asset'
 
-const dynamicImportAssetRex =
-  /(?<=chrome.scripting.(insertCSS|removeCSS)\()[\s\S]*?(?=\))/gm
-const dynamicImportScriptRex =
-  /(?<=chrome.scripting.executeScript\()[\s\S]*?(?=\))/gm
+const fileContentRex = /(?<=['"`])(.*?)(?=['"`])/g
+const chromeScriptingRex =
+  /chrome\s*\.\s*scripting\s*\.\s*(executeScript|insertCSS|removeCSS|registerContentScripts)\s*\(\s*([\s\S]*?)\s*\)/g
 
-export async function generageDynamicImportScript(
+export async function generageDynamicImports(
   context: PluginContext,
   manifestContext,
   code: string
 ): Promise<string> {
-  let sources: string[] = []
-  let content = code.replace(dynamicImportScriptRex, (match) =>
-    match.replace(/(?<=(files:\[)?)["|'][\s\S]*?["|'](?=\]?)/gm, (fileStr) => {
-      const filePath = fileStr.replace(/"|'/g, '').trim()
-      sources.push(filePath)
-      return `"${normalizeJsFilename(filePath)}"`
+  let files: string[] = []
+  let modifiedCode = code.replace(chromeScriptingRex, (match) => {
+    let fileMatches = match.match(fileContentRex)
+    if (Array.isArray(fileMatches)) {
+      files = [...files, ...fileMatches]
+    }
+    return match.replace(fileContentRex, (filePath) => {
+      if (filePath.endsWith('.ts')) {
+        return normalizeJsFilename(filePath)
+      } else if (/\.(less|scss)$/.test(filePath)) {
+        return normalizeCssFilename(filePath)
+      } else {
+        return filePath
+      }
     })
-  )
-  for (const filePath of sources) {
+  })
+  let uniqueFiles = [...new Set(files)]
+  for (const filePath of uniqueFiles) {
     if (/\.(js|ts)$/.test(filePath)) {
       await manifestContext.doBuild(context, filePath)
     }
+    if (/\.(css|less|scss)$/.test(filePath)) {
+      let fullPath = normalizePathResolve(manifestContext.srcDir, filePath)
+      emitAsset(context, filePath, fullPath)
+    }
   }
-  return content
-}
-
-export async function generageDynamicImportAsset(
-  context: PluginContext,
-  manifestContext,
-  code: string
-): Promise<string> {
-  let filePath = ''
-  let content = code.replace(dynamicImportAssetRex, (match) =>
-    match.replace(/(?<=(files:\[)?)["|'][\s\S]*?["|'](?=\]?)/gm, (fileStr) => {
-      filePath = fileStr.replace(/"|'/g, '').trim()
-      return `"${normalizeCssFilename(filePath)}"`
-    })
-  )
-  if (filePath) {
-    let fullPath = normalizePathResolve(manifestContext.srcDir, filePath)
-    emitAsset(context, filePath, fullPath)
-  }
-
-  return content
+  return modifiedCode
 }
