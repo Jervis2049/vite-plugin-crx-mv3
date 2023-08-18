@@ -87,9 +87,8 @@ Check out the examples in this repo.
 + crx-solid
 + crx-newtab
 + crx-contentscript-sass-less
-+ crx-executescript-function
-+ crx-executescript-files
-+ crx-insertcss-files
++ crx-chrome.script
++ crx-i18n
 + crx-devtools
 + crx-webAccessibleResources
 
