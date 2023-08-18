@@ -1,10 +1,10 @@
 {
-  "name": "crx-executescript-files",
-  "description": "A Chrome extension demo.",
+  "name": "crx-chrome.script",
+  "description": "crx-chrome.script demo",
   "version": "1.0.0",
   "action": {},
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "sw.js"
   },
   "permissions": [
     "activeTab",
