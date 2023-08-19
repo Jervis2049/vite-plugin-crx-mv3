@@ -93,10 +93,6 @@ Check out the examples in this repo.
 + crx-webAccessibleResources
 
 ## Preview
-> examples/crx-executescript-function
-
-<img src="./docs/change_page_backgroundcolor.gif" width="1000">
-
 > examples/crx-vue-drawer
 
 <img src="./docs/content_script_drawer.gif" width="1000">
