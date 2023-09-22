@@ -111,3 +111,15 @@ export function removeCommentsFromCode(code: string) {
   }
   return code
 }
+
+export function extractWebAccessibleResources(code: string): string[] {
+  const regex = /chrome\.runtime\.getURL\("(.*?)"\)/g
+  const matches: string[] = []
+  let match: RegExpExecArray | null
+
+  while ((match = regex.exec(code)) !== null) {
+    matches.push(match[1])
+  }
+
+  return matches
+}

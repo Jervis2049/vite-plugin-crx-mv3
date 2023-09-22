@@ -16,7 +16,8 @@ import {
   emitFile,
   getContentFromCache,
   normalizeCssFilename,
-  removeCommentsFromCode
+  removeCommentsFromCode,
+  extractWebAccessibleResources
 } from '../utils'
 import { VITE_PLUGIN_CRX_MV3 } from '../constants'
 import * as serviceWorkParse from './serviceWork'
@@ -221,13 +222,9 @@ export class ManifestProcessor {
         let chunk = bundleMap[scriptAbsolutePath]
         if (chunk) {
           let importedCss = [...chunk.viteMetadata.importedCss]
-          let importedAssets = [...chunk.viteMetadata.importedAssets]
           this.webAccessibleResources = [
             ...this.webAccessibleResources,
-            ...importedCss,
-            ...importedAssets,
-            ...chunk.imports,
-            chunk.fileName
+            ...extractWebAccessibleResources(chunk.code)
           ]
           for (const chunkImport of chunk.imports) {
             if (bundle[chunkImport]) {

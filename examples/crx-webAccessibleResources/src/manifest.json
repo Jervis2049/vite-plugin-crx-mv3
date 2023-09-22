@@ -6,17 +6,5 @@
     "matches": [ "<all_urls>" ],
     "js": ["content.js"]
   }],
-  "web_accessible_resources": [
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "resources": [
-        "style.css",
-        "injected.js",
-        "iframe.html"
-      ]
-    }
-  ],
   "manifest_version": 3
 }
