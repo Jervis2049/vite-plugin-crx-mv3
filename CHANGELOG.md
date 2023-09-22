@@ -1,5 +1,9 @@
 
-
+## 0.1.5 (2023-8-18)
++ fix: url for special characters in manifest name (#29) ([d0906a](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/d0906a)), closes [#29](https://github.com/Jervis2049/vite-plugin-crx-mv3/pull/29)
++ fix: `readFile` causes `emitFile` not to work, replace with `readFileSync` ([b8a683](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/b8a683))
++ fix: the `mkdir` method allows recursive creation of directories ([d605f88](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/d605f88))
++ perf: optimise content matching for chrome.scripting related APIs ([d519751](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/d519751))
 
 ## 0.1.4 (2023-8-10)
 + feat: support i18n (#27) ([e77867f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/1bfcc91)), closes [#27](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/27)
