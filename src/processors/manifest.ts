@@ -224,7 +224,8 @@ export class ManifestProcessor {
           let importedCss = [...chunk.viteMetadata.importedCss]
           this.webAccessibleResources = [
             ...this.webAccessibleResources,
-            ...extractWebAccessibleResources(chunk.code)
+            ...extractWebAccessibleResources(chunk.code),
+            chunk.fileName
           ]
           for (const chunkImport of chunk.imports) {
             if (bundle[chunkImport]) {
