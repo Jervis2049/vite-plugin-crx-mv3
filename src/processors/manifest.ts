@@ -196,7 +196,7 @@ export class ManifestProcessor {
     )
     code = await serviceWorkParse.generageDynamicImports(context, this, code)
 
-    return data + code
+    return { code: data + code, map: null}; 
   }
 
   public async generateDevScript(context, port, reloadPage) {
