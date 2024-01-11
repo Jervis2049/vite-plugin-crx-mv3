@@ -1,6 +1,11 @@
 
+## 0.1.7 (2024-1-11)
++ fix: preserve original source maps  (#35) ([d0c02c](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/d0c02c)), closes [#35](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/35)
+
+
 ## 0.1.6 (2023-10-8)
 + fix:  the `web_accessible_resources` in manifest.json dynamically introduces the path to the file (#31) ([55ebf7](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/55ebf7)), closes [#31](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/31)
+
 ## 0.1.5 (2023-8-18)
 + fix: url for special characters in manifest name (#29) ([d0906a](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/d0906a)), closes [#29](https://github.com/Jervis2049/vite-plugin-crx-mv3/pull/29)
 + fix: `readFile` causes `emitFile` not to work, replace with `readFileSync` ([b8a683](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/b8a683))
@@ -10,6 +15,7 @@
 ## 0.1.4 (2023-8-10)
 + feat: support i18n (#27) ([e77867f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/1bfcc91)), closes [#27](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/27)
 + build: support both cjs and esm (#28) ([e77867f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/1f9dd59)), closes [#28](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/28)
+
 ## 0.1.3 (2023-5-11)
 + feat: Add the `reloadPage` option to control whether the page that contentScripts acts on is reloaded in the dev env. (#20) ([e77867f](https://github.com/Jervis2049/vite-plugin-crx-mv3/commit/e77867f)), closes [#20](https://github.com/Jervis2049/vite-plugin-crx-mv3/issues/20)
 
