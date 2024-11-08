@@ -1,5 +1,5 @@
 import os from 'os'
-import acorn from 'acorn'
+import * as acorn from 'acorn'
 import { dirname, join, resolve, posix } from 'path'
 import { ObjectEncodingOptions, OpenMode } from 'node:fs'
 import { access, writeFile, mkdir, readFile } from 'node:fs/promises'
